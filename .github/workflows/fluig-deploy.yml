@@ -1,0 +1,64 @@
+name: Fluig Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      resource_type:
+        description: Tipo de recurso para publicar
+        required: true
+        default: dataset
+        type: choice
+        options:
+          - dataset
+      resource_path:
+        description: Caminho relativo do recurso; vazio publica todos do tipo
+        required: false
+        type: string
+      dry_run:
+        description: Apenas exibe os comandos sem executar o deploy
+        required: true
+        default: false
+        type: boolean
+  push:
+    branches:
+      - main
+    paths:
+      - "dataset/**"
+      - "fluig.json"
+      - ".github/workflows/fluig-deploy.yml"
+      - ".github/scripts/**"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Fluig Resource
+    runs-on: ubuntu-latest
+    env:
+      FLUIG_BASE_URL: ${{ secrets.FLUIG_BASE_URL }}
+      FLUIG_CONSUMER_KEY: ${{ secrets.FLUIG_CONSUMER_KEY }}
+      FLUIG_CONSUMER_SECRET: ${{ secrets.FLUIG_CONSUMER_SECRET }}
+      FLUIG_ACCESS_TOKEN: ${{ secrets.FLUIG_ACCESS_TOKEN }}
+      FLUIG_TOKEN_SECRET: ${{ secrets.FLUIG_TOKEN_SECRET }}
+      FLUIG_CLI_DOWNLOAD_URL: ${{ vars.FLUIG_CLI_DOWNLOAD_URL }}
+      FLUIG_CLI_SHA256: ${{ vars.FLUIG_CLI_SHA256 }}
+      FLUIG_DEPLOY_COMMAND_TEMPLATE: ${{ vars.FLUIG_DEPLOY_COMMAND_TEMPLATE }}
+      FLUIG_RESOURCE_TYPE: ${{ github.event.inputs.resource_type || 'dataset' }}
+      FLUIG_RESOURCE_PATH: ${{ github.event.inputs.resource_path || '' }}
+      FLUIG_DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download standalone CLI
+        run: bash .github/scripts/setup-standalone-cli.sh
+
+      - name: Execute Fluig deploy
+        run: node .github/scripts/deploy-fluig-resource.mjs
