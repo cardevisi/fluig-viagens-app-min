@@ -1,0 +1,19 @@
+{
+  "projectName": "fluig-viagens-app",
+  "cli": {
+    "mode": "standalone",
+    "downloadUrl": "https://github.com/SEU_USUARIO/SEU_CLI/releases/download/v1.0.0/fluig-cli-linux-x64",
+    "sha256": "",
+    "outputPath": ".github/bin/fluig-cli"
+  },
+  "resources": {
+    "dataset": {
+      "directory": "dataset",
+      "extensions": [".js"]
+    }
+  },
+  "deploy": {
+    "defaultResourceType": "dataset",
+    "commandTemplate": "dataset deploy --file {{resource}} --name {{resourceName}}"
+  }
+}
