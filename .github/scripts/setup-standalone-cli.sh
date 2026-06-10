@@ -52,19 +52,68 @@ CLI_SHA256="${FLUIG_CLI_SHA256:-$(read_config_value "cli.sha256")}"
 CLI_OUTPUT_REL="${FLUIG_CLI_OUTPUT_PATH:-$(read_config_value "cli.outputPath" ".github/bin/fluig-cli")}"
 CLI_OUTPUT_PATH="${ROOT_DIR}/${CLI_OUTPUT_REL}"
 
+compute_sha256() {
+  local file_path="$1"
+
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "${file_path}" | awk '{print $1}'
+    return 0
+  fi
+
+  if command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "${file_path}" | awk '{print $1}'
+    return 0
+  fi
+
+  echo "Nenhum comando de checksum SHA-256 disponivel (sha256sum ou shasum)." >&2
+  exit 1
+}
+
+is_existing_cli_valid() {
+  if [[ ! -f "${CLI_OUTPUT_PATH}" ]]; then
+    return 1
+  fi
+
+  if [[ ! -x "${CLI_OUTPUT_PATH}" ]]; then
+    chmod +x "${CLI_OUTPUT_PATH}"
+  fi
+
+  if [[ -n "${CLI_SHA256}" ]]; then
+    local actual_sha256
+    actual_sha256="$(compute_sha256 "${CLI_OUTPUT_PATH}")"
+
+    if [[ "${actual_sha256}" != "${CLI_SHA256}" ]]; then
+      echo "CLI existente encontrado, mas com checksum divergente. Esperado: ${CLI_SHA256} | Atual: ${actual_sha256}"
+      return 1
+    fi
+
+    echo "CLI existente validado por checksum."
+  else
+    echo "CLI existente encontrado em ${CLI_OUTPUT_PATH}; reaproveitando binario."
+  fi
+
+  return 0
+}
+
+mkdir -p "$(dirname "${CLI_OUTPUT_PATH}")"
+
+if is_existing_cli_valid; then
+  echo "FLUIG_CLI_PATH=${CLI_OUTPUT_PATH}" >> "${GITHUB_ENV}"
+  echo "CLI standalone pronto em ${CLI_OUTPUT_PATH}"
+  exit 0
+fi
+
 if [[ -z "${CLI_DOWNLOAD_URL}" ]]; then
   echo "FLUIG_CLI_DOWNLOAD_URL nao definido. Configure a repo variable ou fluig.json > cli.downloadUrl."
   exit 1
 fi
-
-mkdir -p "$(dirname "${CLI_OUTPUT_PATH}")"
 
 echo "Baixando CLI standalone de ${CLI_DOWNLOAD_URL}"
 curl -fsSL "${CLI_DOWNLOAD_URL}" -o "${CLI_OUTPUT_PATH}"
 chmod +x "${CLI_OUTPUT_PATH}"
 
 if [[ -n "${CLI_SHA256}" ]]; then
-  ACTUAL_SHA256="$(sha256sum "${CLI_OUTPUT_PATH}" | awk '{print $1}')"
+  ACTUAL_SHA256="$(compute_sha256 "${CLI_OUTPUT_PATH}")"
   if [[ "${ACTUAL_SHA256}" != "${CLI_SHA256}" ]]; then
     echo "Checksum invalido para o CLI. Esperado: ${CLI_SHA256} | Atual: ${ACTUAL_SHA256}"
     exit 1
