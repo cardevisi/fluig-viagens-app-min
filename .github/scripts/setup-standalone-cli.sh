@@ -69,6 +69,41 @@ compute_sha256() {
   exit 1
 }
 
+download_github_release_asset() {
+  if [[ -z "${GITHUB_TOKEN:-}" ]]; then
+    return 1
+  fi
+
+  if ! command -v gh >/dev/null 2>&1; then
+    return 1
+  fi
+
+  if [[ ! "${CLI_DOWNLOAD_URL}" =~ ^https://github\.com/([^/]+)/([^/]+)/releases/download/([^/]+)/([^/?#]+)$ ]]; then
+    return 1
+  fi
+
+  local repo_owner="${BASH_REMATCH[1]}"
+  local repo_name="${BASH_REMATCH[2]}"
+  local release_tag="${BASH_REMATCH[3]}"
+  local asset_name="${BASH_REMATCH[4]}"
+
+  echo "Baixando CLI standalone da release privada ${repo_owner}/${repo_name}@${release_tag} (${asset_name})"
+  GH_TOKEN="${GITHUB_TOKEN}" gh release download "${release_tag}" \
+    --repo "${repo_owner}/${repo_name}" \
+    --pattern "${asset_name}" \
+    --output "${CLI_OUTPUT_PATH}" \
+    --clobber
+}
+
+download_cli() {
+  if download_github_release_asset; then
+    return 0
+  fi
+
+  echo "Baixando CLI standalone de ${CLI_DOWNLOAD_URL}"
+  curl -fsSL "${CLI_DOWNLOAD_URL}" -o "${CLI_OUTPUT_PATH}"
+}
+
 is_existing_cli_valid() {
   if [[ ! -f "${CLI_OUTPUT_PATH}" ]]; then
     return 1
@@ -108,8 +143,7 @@ if [[ -z "${CLI_DOWNLOAD_URL}" ]]; then
   exit 1
 fi
 
-echo "Baixando CLI standalone de ${CLI_DOWNLOAD_URL}"
-curl -fsSL "${CLI_DOWNLOAD_URL}" -o "${CLI_OUTPUT_PATH}"
+download_cli
 chmod +x "${CLI_OUTPUT_PATH}"
 
 if [[ -n "${CLI_SHA256}" ]]; then
