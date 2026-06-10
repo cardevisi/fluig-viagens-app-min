@@ -2,8 +2,8 @@
   "projectName": "fluig-viagens-app",
   "cli": {
     "mode": "standalone",
-    "downloadUrl": "https://github.com/SEU_USUARIO/SEU_CLI/releases/download/v1.0.0/fluig-cli-linux-x64",
-    "sha256": "",
+    "downloadUrl": "https://github.com/cardevisi/fluig-viagens-app/releases/download/v1.0.0/fluig-cli-linux-x64",
+    "sha256": "9bcd2734138bef264b596a6d6a071a887e9b9ea988db7ccb01139a338503cbc2",
     "outputPath": ".github/bin/fluig-cli"
   },
   "resources": {
