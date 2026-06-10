@@ -7,7 +7,7 @@ Projeto Fluig com pipeline de deploy via GitHub Actions usando um CLI standalone
 - `dataset/`: scripts de dataset a serem publicados
 - `fluig.json`: configuracao do projeto, do CLI e do comando de deploy
 - `.github/workflows/fluig-deploy.yml`: pipeline de deploy
-- `.github/scripts/setup-standalone-cli.sh`: baixa e prepara o binario standalone
+- `.github/scripts/setup-standalone-cli.sh`: reutiliza ou baixa e prepara o binario standalone
 - `.github/scripts/deploy-fluig-resource.mjs`: resolve os arquivos e executa o deploy
 
 ## Secrets obrigatorios
@@ -27,6 +27,15 @@ Voce pode sobrescrever a configuracao de `fluig.json` com repo variables:
 - `FLUIG_CLI_DOWNLOAD_URL`
 - `FLUIG_CLI_SHA256`
 - `FLUIG_DEPLOY_COMMAND_TEMPLATE`
+
+## Comportamento do setup do CLI
+
+O script `.github/scripts/setup-standalone-cli.sh` segue um fluxo idempotente:
+
+- se o binario ja existir em `cli.outputPath`, ele reutiliza o arquivo
+- se `cli.sha256` estiver configurado, valida o checksum antes de reutilizar
+- se o arquivo existir mas estiver invalido, faz o download novamente
+- `FLUIG_CLI_DOWNLOAD_URL` so e obrigatorio quando o download realmente for necessario
 
 ## fluig.json
 
