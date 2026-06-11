@@ -4,7 +4,7 @@ Projeto Fluig com pipeline de deploy via GitHub Actions usando um CLI standalone
 
 ## Estrutura
 
-- `dataset/`: scripts de dataset a serem publicados
+- `datasets/`: scripts de dataset a serem publicados
 - `fluig.json`: configuracao do projeto, do CLI e do comando de deploy
 - `.github/workflows/fluig-deploy.yml`: pipeline de deploy
 - `.github/scripts/setup-standalone-cli.sh`: reutiliza ou baixa e prepara o binario standalone
@@ -108,7 +108,7 @@ Exemplo:
   },
   "resources": {
     "dataset": {
-      "directory": "dataset",
+      "directory": "datasets",
       "extensions": [".js"]
     }
   },
@@ -144,6 +144,6 @@ Deploy manual pelo GitHub Actions:
 1. Abra `Actions`.
 2. Execute `Fluig Deploy`.
 3. Informe `resource_type=dataset`.
-4. Opcionalmente informe `resource_path=dataset/ds_viagens_exemplo.js`.
+4. Opcionalmente informe `resource_path=datasets/ds_viagens_exemplo.js`.
 
-Em `push` para `main`, o workflow tenta publicar todos os arquivos de `dataset/`.
+Em `push` para `main`, o workflow tenta publicar todos os arquivos de `datasets/`.
