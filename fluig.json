@@ -9,7 +9,7 @@
   },
   "resources": {
     "dataset": {
-      "directory": "dataset",
+      "directory": "datasets",
       "extensions": [".js"]
     }
   },
