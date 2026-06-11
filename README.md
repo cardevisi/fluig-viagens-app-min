@@ -20,7 +20,7 @@ O fluxo de deploy funciona assim:
 4. Quando `cli.sha256` estiver preenchido, o binario e validado antes do deploy.
 5. O script de deploy cria um servidor do Fluig CLI com `fluig servers create`.
 6. O script autentica no servidor com `fluig auth login`.
-7. O workflow executa o deploy com base no `commandTemplate` definido em `fluig.json`.
+7. O workflow executa o export com base no `commandTemplate` definido em `fluig.json`.
 
 ### Diagrama de funcionamento
 
@@ -92,6 +92,21 @@ Detalhes do fluxo:
 - a melhor pratica e manter `downloadUrl` e `sha256` sempre versionados juntos
 - se uma nova versao do CLI for publicada, atualize os dois campos em `fluig.json` ou nas repo variables
 
+## Tipos suportados pelo CLI
+
+O comando `fluig export resource` suporta os tipos:
+
+- `dataset`
+- `form`
+- `widget`
+- `layout`
+- `events`
+- `reports`
+
+Observacao:
+
+- para `widget` e `layout`, o CLI gera o `.war` automaticamente na pasta `target` antes do envio
+
 ## fluig.json
 
 Exemplo:
@@ -114,7 +129,7 @@ Exemplo:
   },
   "deploy": {
     "defaultResourceType": "dataset",
-    "commandTemplate": "dataset deploy --file {{resource}} --name {{resourceName}}"
+    "commandTemplate": "export resource --projectPath {{projectRoot}} --resourceType {{resourceType}} --resourceName {{resourceName}} --serverName {{serverName}}"
   }
 }
 ```
@@ -128,6 +143,7 @@ O `commandTemplate` aceita:
 - `{{resourceName}}`: nome do recurso sem extensao
 - `{{resourceType}}`: tipo do recurso, como `dataset`
 - `{{projectRoot}}`: raiz do repositorio
+- `{{serverName}}`: nome do servidor criado e autenticado pelo CLI
 
 ## Boas praticas
 

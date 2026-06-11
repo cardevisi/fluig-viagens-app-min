@@ -67,6 +67,7 @@ async function main() {
       resourceName: shellQuote(resourceName),
       resourceType: shellQuote(resourceType),
       projectRoot: shellQuote(rootDir),
+      serverName: shellQuote(serverConfig.serverName),
     });
     const command = `${shellQuote(cliPath)} ${args}`;
 
