@@ -15,6 +15,6 @@
   },
   "deploy": {
     "defaultResourceType": "dataset",
-    "commandTemplate": "dataset deploy --file {{resource}} --name {{resourceName}}"
+    "commandTemplate": "export resource --projectPath {{projectRoot}} --resourceType {{resourceType}} --resourceName {{resourceName}} --serverName {{serverName}}"
   }
 }
