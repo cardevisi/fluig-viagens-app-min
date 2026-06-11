@@ -174,7 +174,6 @@ async function ensureCliAuthenticated(cliPath, serverConfig, dryRun) {
     serverConfig.serverName,
     "--host",
     serverConfig.host,
-    `--ssl=${String(serverConfig.ssl)}`,
     "--port",
     String(serverConfig.port),
     "--username",
@@ -182,6 +181,9 @@ async function ensureCliAuthenticated(cliPath, serverConfig, dryRun) {
     "--password",
     serverConfig.password,
   ];
+  if (serverConfig.ssl) {
+    createServerArgs.splice(6, 0, "--ssl");
+  }
   const loginArgs = [
     "auth",
     "login",
