@@ -40,5 +40,7 @@ function createDataset() {
     dataset.addRow([pais.codigo, pais.nome, pais.sigla]);
   }
 
+  console.log("Dataset de países criado com " + paises.length + " registros.");
+
   return dataset;
 }
