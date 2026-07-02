@@ -1,5 +1,11 @@
 {
   "projectName": "fluig-viagens-app",
+  "description": "Projeto de viagens com pipeline de deploy automatizado via GitHub Actions",
+  "version": "1.0.0",
+  "author": "TOTVS",
+  "license": "MIT",
+  "fluigVersion": "2.0.0",
+  "type": "application",
   "cli": {
     "mode": "standalone",
     "downloadUrl": "https://github.com/cardevisi/fluig-viagens-app/releases/download/v1.0.0/fluig-cli-linux-x64",

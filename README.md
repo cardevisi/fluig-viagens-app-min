@@ -1,26 +1,50 @@
 # fluig-viagens-app
 
-Projeto Fluig com pipeline de deploy via GitHub Actions usando um CLI standalone baixado de release do GitHub.
+Projeto Fluig com pipeline de deploy automatizado via GitHub Actions usando um CLI standalone baixado de release do GitHub.
 
-## Estrutura
+## Estrutura do projeto
 
-- `datasets/`: scripts de dataset a serem publicados
-- `fluig.json`: configuracao do projeto, do CLI e do comando de deploy
-- `.github/workflows/fluig-deploy.yml`: pipeline de deploy
-- `.github/scripts/setup-standalone-cli.sh`: reutiliza ou baixa e prepara o binario standalone
-- `.github/scripts/deploy-fluig-resource.mjs`: resolve os arquivos e executa o deploy
+```
+fluig-viagens-app/
+├── fluig.json                          # Configuração do projeto, do CLI e do deploy
+├── datasets/
+│   └── ds_viagens_paises.js            # Dataset de países para uso em formulários de viagem
+├── events/                             # Eventos globais (vazio)
+├── forms/                              # Formulários (vazio)
+├── mechanisms/                         # Mecanismos customizados (vazio)
+├── reports/                            # Relatórios (vazio)
+├── wcm/
+│   ├── layout/                         # Layouts de página (vazio)
+│   └── widget/                         # Widgets (vazio)
+├── workflow/
+│   ├── diagrams/                       # Diagramas de processo (vazio)
+│   ├── literals/                       # Literais de workflow (vazio)
+│   └── scripts/                        # Scripts de workflow (vazio)
+└── .github/
+    ├── workflows/
+    │   └── fluig-deploy.yml            # Pipeline de deploy
+    └── scripts/
+        ├── setup-standalone-cli.sh     # Baixa ou reutiliza o binário do Fluig CLI
+        └── deploy-fluig-resource.mjs  # Autentica no servidor e publica os recursos
+```
 
-## Visao geral
+## Datasets
+
+| Arquivo | Descrição |
+|---|---|
+| `ds_viagens_paises.js` | Lista de países com código ISO, nome e sigla para uso em seleções de destino |
+
+## Visão geral do deploy
 
 O fluxo de deploy funciona assim:
 
-1. O workflow executa o script `.github/scripts/setup-standalone-cli.sh`.
-2. O script tenta reutilizar o binario local em `.github/bin/fluig-cli`.
-3. Se o binario nao existir ou estiver invalido, o script baixa o asset configurado em `cli.downloadUrl`.
-4. Quando `cli.sha256` estiver preenchido, o binario e validado antes do deploy.
-5. O script de deploy cria um servidor do Fluig CLI com `fluig servers create`.
-6. O script autentica no servidor com `fluig auth login`.
-7. O workflow executa o export com base no `commandTemplate` definido em `fluig.json`.
+1. O workflow executa `.github/scripts/setup-standalone-cli.sh`.
+2. O script tenta reutilizar o binário local em `.github/bin/fluig-cli`.
+3. Se o binário não existir ou tiver checksum divergente, faz o download do asset configurado em `cli.downloadUrl`.
+4. Quando `cli.sha256` estiver preenchido, o binário é validado antes do deploy.
+5. O script `.github/scripts/deploy-fluig-resource.mjs` cria um servidor com `fluig servers create`.
+6. O script autentica com `fluig auth login`.
+7. O deploy executa o `commandTemplate` definido em `fluig.json` para cada arquivo encontrado.
 
 ### Diagrama de funcionamento
 
@@ -44,76 +68,42 @@ flowchart LR
     M --> N[Publica recurso no Fluig]
 ```
 
-## Secrets obrigatorios
+## Configuração do repositório
 
-Configure no repositorio:
+### Secrets obrigatórios
 
-- `FLUIG_BASE_URL`
-- `FLUIG_USERNAME`
-- `FLUIG_PASSWORD`
+Configure em **Settings › Secrets and variables › Actions › Secrets**:
 
-## Variaveis opcionais
+| Secret | Descrição |
+|---|---|
+| `FLUIG_BASE_URL` | URL base do servidor Fluig (ex.: `https://fluig.empresa.com`) |
+| `FLUIG_USERNAME` | Usuário de autenticação no Fluig |
+| `FLUIG_PASSWORD` | Senha de autenticação no Fluig |
 
-Voce pode sobrescrever a configuracao de `fluig.json` com repo variables:
+### Variáveis de repositório (opcionais)
 
-- `FLUIG_SERVER_NAME`
-- `FLUIG_CLI_DOWNLOAD_URL`
-- `FLUIG_CLI_SHA256`
-- `FLUIG_DEPLOY_COMMAND_TEMPLATE`
+Configure em **Settings › Secrets and variables › Actions › Variables** para sobrescrever o `fluig.json`:
 
-## Comportamento do setup do CLI
-
-O script `.github/scripts/setup-standalone-cli.sh` segue um fluxo idempotente:
-
-- se o binario ja existir em `cli.outputPath`, ele reutiliza o arquivo
-- se `cli.sha256` estiver configurado, valida o checksum antes de reutilizar
-- se o arquivo existir mas estiver invalido, faz o download novamente
-- `FLUIG_CLI_DOWNLOAD_URL` so e obrigatorio quando o download realmente for necessario
-- o binario em `.github/bin/fluig-cli` e cache local do workspace e nao deve ser versionado
-
-## Preparacao do servidor
-
-Antes de publicar qualquer recurso, o script `.github/scripts/deploy-fluig-resource.mjs` executa automaticamente:
-
-- `fluig servers create --server-name ... --host ... --ssl ... --port ... --username ... --password ...`
-- `fluig auth login --server-name ... --username ... --password ...`
-
-Detalhes do fluxo:
-
-- `FLUIG_BASE_URL` e convertida automaticamente em `host`, `ssl` e `port`
-- `FLUIG_SERVER_NAME` pode sobrescrever o nome do servidor; se nao for informado, o valor de `cli.serverName` e usado
-- as credenciais sao lidas de `FLUIG_USERNAME` e `FLUIG_PASSWORD`
-- em `dry_run`, os comandos sao exibidos sem vazar a senha
-
-## Origem do CLI
-
-- o binario Linux usado no pipeline e publicado como asset de release no GitHub
-- a URL padrao atual aponta para `v1.0.0` do proprio repositorio
-- a melhor pratica e manter `downloadUrl` e `sha256` sempre versionados juntos
-- se uma nova versao do CLI for publicada, atualize os dois campos em `fluig.json` ou nas repo variables
-
-## Tipos suportados pelo CLI
-
-O comando `fluig export resource` suporta os tipos:
-
-- `dataset`
-- `form`
-- `widget`
-- `layout`
-- `events`
-- `reports`
-
-Observacao:
-
-- para `widget` e `layout`, o CLI gera o `.war` automaticamente na pasta `target` antes do envio
+| Variável | Descrição |
+|---|---|
+| `FLUIG_SERVER_NAME` | Nome lógico do servidor no CLI |
+| `FLUIG_CLI_DOWNLOAD_URL` | URL de download do binário do Fluig CLI |
+| `FLUIG_CLI_SHA256` | Checksum SHA-256 esperado do binário |
+| `FLUIG_DEPLOY_COMMAND_TEMPLATE` | Template do comando de deploy com placeholders `{{variavel}}` |
 
 ## fluig.json
 
-Exemplo:
+Configuração atual do projeto:
 
 ```json
 {
   "projectName": "fluig-viagens-app",
+  "description": "Projeto de viagens com pipeline de deploy automatizado via GitHub Actions",
+  "version": "1.0.0",
+  "author": "TOTVS",
+  "license": "MIT",
+  "fluigVersion": "2.0.0",
+  "type": "application",
   "cli": {
     "mode": "standalone",
     "downloadUrl": "https://github.com/cardevisi/fluig-viagens-app/releases/download/v1.0.0/fluig-cli-linux-x64",
@@ -134,32 +124,74 @@ Exemplo:
 }
 ```
 
-## Placeholders do comando
+## Placeholders do commandTemplate
 
-O `commandTemplate` aceita:
+| Placeholder | Valor |
+|---|---|
+| `{{resource}}` | Caminho relativo do arquivo (ex.: `datasets/ds_viagens_paises.js`) |
+| `{{resourceAbsolute}}` | Caminho absoluto do arquivo |
+| `{{resourceName}}` | Nome do arquivo sem extensão (ex.: `ds_viagens_paises`) |
+| `{{resourceType}}` | Tipo do recurso (ex.: `dataset`) |
+| `{{projectRoot}}` | Caminho absoluto da raiz do repositório |
+| `{{serverName}}` | Nome do servidor criado e autenticado pelo CLI |
 
-- `{{resource}}`: caminho relativo do arquivo
-- `{{resourceAbsolute}}`: caminho absoluto do arquivo
-- `{{resourceName}}`: nome do recurso sem extensao
-- `{{resourceType}}`: tipo do recurso, como `dataset`
-- `{{projectRoot}}`: raiz do repositorio
-- `{{serverName}}`: nome do servidor criado e autenticado pelo CLI
+## Comportamento do setup do CLI
 
-## Boas praticas
+O script `setup-standalone-cli.sh` segue um fluxo idempotente:
 
-- nao versione `/.github/bin/fluig-cli`; esse arquivo deve existir apenas como cache local
-- mantenha `cli.sha256` preenchido para evitar uso de binarios corrompidos ou trocados
-- use `cli.serverName` ou `FLUIG_SERVER_NAME` para padronizar o nome do servidor criado pelo CLI
-- use `FLUIG_CLI_DOWNLOAD_URL` e `FLUIG_CLI_SHA256` apenas quando precisar sobrescrever o padrao do projeto
-- prefira publicar novas versoes do CLI em releases em vez de commitar binarios grandes no repositorio
+- Se o binário já existir em `cli.outputPath`, reutiliza o arquivo sem novo download.
+- Se `cli.sha256` estiver configurado, valida o checksum antes de reutilizar.
+- Se o arquivo existir mas com checksum divergente, faz o download novamente.
+- `FLUIG_CLI_DOWNLOAD_URL` só é obrigatório quando o download for necessário.
+- O binário em `.github/bin/fluig-cli` é cache local do workspace e **não deve ser versionado**.
+
+> Adicione `.github/bin/` ao `.gitignore` para evitar que o binário seja commitado acidentalmente.
+
+## Preparação do servidor
+
+Antes de publicar qualquer recurso, o `deploy-fluig-resource.mjs` executa automaticamente:
+
+```
+fluig servers create --server-name <nome> --host <host> [--ssl] --port <porta> --username <user> --password <pass>
+fluig auth login --server-name <nome> --username <user> --password <pass>
+```
+
+- `FLUIG_BASE_URL` é convertida automaticamente em `host`, `ssl` e `port`.
+- O nome do servidor segue a prioridade: `FLUIG_SERVER_NAME` › `cli.serverName` em `fluig.json` › nome do projeto › `fluig-ci`.
+- O `GITHUB_RUN_ID` é adicionado como sufixo ao nome do servidor para evitar colisões entre runs paralelas.
+- Em `dry_run`, os comandos são exibidos no log sem executar e sem vazar a senha.
 
 ## Como usar
 
-Deploy manual pelo GitHub Actions:
+### Deploy manual
 
-1. Abra `Actions`.
-2. Execute `Fluig Deploy`.
-3. Informe `resource_type=dataset`.
-4. Opcionalmente informe `resource_path=datasets/ds_viagens_exemplo.js`.
+1. Acesse **Actions › Fluig Deploy › Run workflow**.
+2. Selecione `resource_type = dataset`.
+3. Opcionalmente informe `resource_path` com o caminho relativo de um único arquivo (ex.: `datasets/ds_viagens_paises.js`). Deixe vazio para publicar todos os datasets.
+4. Marque `dry_run` para apenas visualizar os comandos sem executar o deploy.
 
-Em `push` para `main`, o workflow tenta publicar todos os arquivos de `datasets/`.
+### Deploy automático
+
+Em qualquer `push` para `main` que altere arquivos em:
+
+- `datasets/**`
+- `fluig.json`
+- `.github/workflows/fluig-deploy.yml`
+- `.github/scripts/**`
+
+O workflow dispara automaticamente e publica todos os arquivos de `datasets/`.
+
+## Origem do CLI
+
+- O binário Linux usado no pipeline é publicado como asset de release neste próprio repositório.
+- A versão atual aponta para `v1.0.0` (`fluig-cli-linux-x64`).
+- Ao publicar uma nova versão do CLI, atualize `cli.downloadUrl` e `cli.sha256` juntos em `fluig.json` ou nas repo variables.
+
+## Boas práticas
+
+- Não versione `.github/bin/fluig-cli`; adicione o caminho ao `.gitignore`.
+- Mantenha `cli.sha256` preenchido para evitar uso de binários corrompidos ou substituídos.
+- Use `cli.serverName` ou `FLUIG_SERVER_NAME` para padronizar o nome do servidor.
+- Prefira publicar novas versões do CLI em releases em vez de commitar binários no repositório.
+- Atualize sempre `downloadUrl` e `sha256` juntos ao trocar a versão do CLI.
+
