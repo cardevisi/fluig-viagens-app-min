@@ -97,7 +97,7 @@ Configuração atual do projeto:
 
 ```json
 {
-  "projectName": "fluig-viagens-app",
+  "name": "fluig-viagens-app",
   "description": "Projeto de viagens com pipeline de deploy automatizado via GitHub Actions",
   "version": "1.0.0",
   "author": "TOTVS",

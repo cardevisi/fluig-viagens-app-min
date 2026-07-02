@@ -92,7 +92,7 @@ async function main() {
   const serverConfig = resolveServerConfig(config);
 
   // Exibe resumo da execução antes de iniciar o deploy.
-  console.log(`Projeto: ${config.projectName || path.basename(rootDir)}`);
+  console.log(`Projeto: ${config.name || path.basename(rootDir)}`);
   console.log(`Tipo de recurso: ${resourceType}`);
   console.log(`CLI: ${cliPath}`);
   console.log(
@@ -217,7 +217,7 @@ function resolveServerConfig(config) {
     process.env.FLUIG_SERVER_NAME?.trim() || config.cli?.serverName || "";
   const baseServerName =
     explicitServerName ||
-    config.projectName ||
+    config.name ||
     path.basename(rootDir) ||
     "fluig-ci";
 
