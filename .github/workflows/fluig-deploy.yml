@@ -1,6 +1,37 @@
+# fluig-deploy.yml
+#
+# Workflow de deploy automatizado de recursos Fluig no GitHub Actions.
+#
+# Pode ser disparado de duas formas:
+#  1. Manualmente (workflow_dispatch): o usuário escolhe o tipo de recurso,
+#     opcionalmente um arquivo específico e se quer apenas simular (dry-run).
+#  2. Automaticamente (push na main): quando arquivos de datasets, fluig.json
+#     ou os próprios scripts de CI forem alterados.
+#
+# Fluxo de execução:
+#  1. Faz checkout do repositório.
+#  2. Instala o Node.js 22.
+#  3. Baixa (ou reutiliza do cache) o binário standalone do Fluig CLI.
+#  4. Executa o script de deploy que autentica no servidor e publica os recursos.
+#
+# Secrets necessários (Settings > Secrets and variables > Actions > Secrets):
+#  - FLUIG_BASE_URL    URL base do servidor Fluig  (ex.: https://fluig.empresa.com)
+#  - FLUIG_USERNAME    Usuário de autenticação no Fluig
+#  - FLUIG_PASSWORD    Senha de autenticação no Fluig
+#
+# Variáveis de repositório (Settings > Secrets and variables > Actions > Variables):
+#  - FLUIG_SERVER_NAME           Nome lógico do servidor no CLI (opcional)
+#  - FLUIG_CLI_DOWNLOAD_URL      URL de download do binário do Fluig CLI
+#  - FLUIG_CLI_SHA256            Checksum SHA-256 do binário para validação de integridade
+#  - FLUIG_DEPLOY_COMMAND_TEMPLATE Template do comando de deploy com placeholders {{variavel}}
+
 name: Fluig Deploy
 
+# ---------------------------------------------------------------------------
+# Gatilhos do workflow
+# ---------------------------------------------------------------------------
 on:
+  # Disparo manual pelo painel do GitHub Actions, com parâmetros configuráveis.
   workflow_dispatch:
     inputs:
       resource_type:
@@ -11,54 +42,83 @@ on:
         options:
           - dataset
       resource_path:
+        # Quando vazio, todos os arquivos do tipo selecionado serão publicados.
         description: Caminho relativo do recurso; vazio publica todos do tipo
         required: false
         type: string
       dry_run:
+        # Útil para validar o fluxo sem efetuar mudanças no servidor Fluig.
         description: Apenas exibe os comandos sem executar o deploy
         required: true
         default: false
         type: boolean
+
+  # Disparo automático em push na branch main quando arquivos relevantes mudam.
   push:
     branches:
       - main
     paths:
-      - "datasets/**"
-      - "fluig.json"
-      - ".github/workflows/fluig-deploy.yml"
-      - ".github/scripts/**"
+      - "datasets/**"                          # Qualquer dataset alterado
+      - "fluig.json"                           # Configuração do projeto
+      - ".github/workflows/fluig-deploy.yml"  # O próprio workflow
+      - ".github/scripts/**"                  # Scripts de CI
 
+# ---------------------------------------------------------------------------
+# Permissões mínimas necessárias para o workflow.
+# "contents: read" permite apenas leitura do repositório (checkout).
+# ---------------------------------------------------------------------------
 permissions:
   contents: read
 
+# ---------------------------------------------------------------------------
+# Jobs
+# ---------------------------------------------------------------------------
 jobs:
   deploy:
     name: Deploy Fluig Resource
     runs-on: ubuntu-latest
+
+    # Variáveis de ambiente disponíveis em todos os steps do job.
+    # Secrets (${{ secrets.* }}) são valores sensíveis criptografados.
+    # Vars (${{ vars.* }}) são variáveis de repositório não sensíveis.
     env:
+      # Token automático do Actions, usado pelo gh CLI para releases privadas.
       GITHUB_TOKEN: ${{ github.token }}
+
+      # Credenciais de acesso ao servidor Fluig (secrets).
       FLUIG_BASE_URL: ${{ secrets.FLUIG_BASE_URL }}
       FLUIG_USERNAME: ${{ secrets.FLUIG_USERNAME }}
       FLUIG_PASSWORD: ${{ secrets.FLUIG_PASSWORD }}
+
+      # Configurações do CLI e do deploy (variáveis de repositório).
       FLUIG_SERVER_NAME: ${{ vars.FLUIG_SERVER_NAME }}
       FLUIG_CLI_DOWNLOAD_URL: ${{ vars.FLUIG_CLI_DOWNLOAD_URL }}
       FLUIG_CLI_SHA256: ${{ vars.FLUIG_CLI_SHA256 }}
       FLUIG_DEPLOY_COMMAND_TEMPLATE: ${{ vars.FLUIG_DEPLOY_COMMAND_TEMPLATE }}
+
+      # Parâmetros de execução: vêm do input manual ou de valores padrão para push automático.
       FLUIG_RESOURCE_TYPE: ${{ github.event.inputs.resource_type || 'dataset' }}
       FLUIG_RESOURCE_PATH: ${{ github.event.inputs.resource_path || '' }}
       FLUIG_DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
 
     steps:
+      # Faz checkout do repositório no runner para que os scripts e arquivos estejam disponíveis.
       - name: Checkout
         uses: actions/checkout@v5
 
+      # Instala o Node.js 22, necessário para executar o script de deploy (.mjs).
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: 22
 
+      # Baixa o binário standalone do Fluig CLI (ou reutiliza se já estiver em cache e válido).
+      # Ao final, exporta FLUIG_CLI_PATH para o GITHUB_ENV, disponibilizando o caminho
+      # ao próximo step automaticamente.
       - name: Download standalone CLI
         run: bash .github/scripts/setup-standalone-cli.sh
 
+      # Executa o deploy propriamente dito: autentica no servidor Fluig e publica os recursos.
+      # Lê FLUIG_CLI_PATH (exportado pelo step anterior) e todas as envs do job.
       - name: Execute Fluig deploy
         run: node .github/scripts/deploy-fluig-resource.mjs
