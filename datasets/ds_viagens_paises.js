@@ -41,6 +41,7 @@ function createDataset() {
   }
 
   console.log("Dataset de países criado com sucesso. Total de países: " + paises.length);
+  console.log("Exemplo de país: " + JSON.stringify(paises[0]));
 
   return dataset;
 }
