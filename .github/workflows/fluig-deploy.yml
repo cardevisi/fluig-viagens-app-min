@@ -9,10 +9,11 @@
 #     ou os próprios scripts de CI forem alterados.
 #
 # Fluxo de execução:
-#  1. Faz checkout do repositório.
-#  2. Instala o Node.js 22.
-#  3. Baixa (ou reutiliza do cache) o binário standalone do Fluig CLI.
-#  4. Executa o script de deploy que autentica no servidor e publica os recursos.
+#  1. Roda os testes unitários dos datasets (job "test"); o deploy só prossegue se passarem.
+#  2. Faz checkout do repositório.
+#  3. Instala o Node.js 22.
+#  4. Baixa (ou reutiliza do cache) o binário standalone do Fluig CLI.
+#  5. Executa o script de deploy que autentica no servidor e publica os recursos.
 #
 # Secrets necessários (Settings > Secrets and variables > Actions > Secrets):
 #  - FLUIG_BASE_URL    URL base do servidor Fluig  (ex.: https://fluig.empresa.com)
@@ -74,8 +75,26 @@ permissions:
 # Jobs
 # ---------------------------------------------------------------------------
 jobs:
+  # Executa os testes unitários dos datasets antes de liberar o deploy.
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Run dataset unit tests
+        run: npm test
+
   deploy:
     name: Deploy Fluig Resource
+    needs: test
     runs-on: ubuntu-latest
 
     # Variáveis de ambiente disponíveis em todos os steps do job.

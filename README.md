@@ -7,8 +7,13 @@ Projeto Fluig com pipeline de deploy automatizado via GitHub Actions usando um C
 ```
 fluig-viagens-app/
 ├── fluig.json                          # Configuração do projeto, do CLI e do deploy
+├── package.json                        # Script de teste (node --test)
 ├── datasets/
 │   └── ds_viagens_paises.js            # Dataset de países para uso em formulários de viagem
+├── tests/
+│   ├── helpers/                        # Mocks de globais Fluig e loader de scripts via vm
+│   └── datasets/
+│       └── ds_viagens_paises.test.js   # Testes unitários do dataset de países
 ├── events/                             # Eventos globais (vazio)
 ├── forms/                              # Formulários (vazio)
 ├── mechanisms/                         # Mecanismos customizados (vazio)
@@ -22,7 +27,8 @@ fluig-viagens-app/
 │   └── scripts/                        # Scripts de workflow (vazio)
 └── .github/
     ├── workflows/
-    │   └── fluig-deploy.yml            # Pipeline de deploy
+    │   ├── fluig-deploy.yml            # Pipeline de deploy
+    │   └── tests.yml                   # Pipeline de testes unitários
     └── scripts/
         ├── setup-standalone-cli.sh     # Baixa ou reutiliza o binário do Fluig CLI
         └── deploy-fluig-resource.mjs  # Autentica no servidor e publica os recursos
@@ -33,6 +39,37 @@ fluig-viagens-app/
 | Arquivo | Descrição |
 |---|---|
 | `ds_viagens_paises.js` | Lista de países com código ISO, nome e sigla para uso em seleções de destino |
+
+## Testes unitários
+
+Os scripts de dataset rodam nativamente no engine JavaScript do servidor Fluig, que injeta
+globais como `DatasetBuilder` e `DatasetFieldType`. Para testá-los em Node.js sem um servidor
+Fluig real, os testes carregam cada script em um sandbox (`node:vm`) com mocks dessas globais.
+
+```
+tests/
+├── helpers/
+│   ├── fluigMocks.js            # Mocks de DatasetBuilder e DatasetFieldType
+│   └── loadDatasetScript.js     # Executa um script de dataset num sandbox isolado
+└── datasets/
+    └── ds_viagens_paises.test.js
+```
+
+Não há dependências externas: os testes usam o test runner nativo do Node.js (`node --test`).
+
+### Rodando os testes
+
+```bash
+npm test
+```
+
+### Adicionando testes para um novo dataset
+
+1. Crie o arquivo em `datasets/`.
+2. Crie `tests/datasets/<nome_do_dataset>.test.js` usando `loadDatasetScript` para carregar o
+   script e `sandbox.createDataset()` para obter o dataset mockado (`getColumns()`/`getRows()`).
+3. Não coloque arquivos de teste dentro de `datasets/`: o deploy publica todo `.js` encontrado
+   nesse diretório (ver `resources.dataset` em `fluig.json`).
 
 ## Visão geral do deploy
 
