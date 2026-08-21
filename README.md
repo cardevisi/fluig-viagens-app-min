@@ -9,11 +9,11 @@ fluig-viagens-app/
 ├── fluig.json                          # Configuração do projeto, do CLI e do deploy
 ├── package.json                        # Script de teste (node --test)
 ├── datasets/
-│   └── ds_viagens_paises.js            # Dataset de países para uso em formulários de viagem
+│   └── ds-viagens-paises.js            # Dataset de países para uso em formulários de viagem
 ├── tests/
 │   ├── helpers/                        # Mocks de globais Fluig e loader de scripts via vm
 │   └── datasets/
-│       └── ds_viagens_paises.test.js   # Testes unitários do dataset de países
+│       └── ds-viagens-paises.test.js   # Testes unitários do dataset de países
 ├── events/                             # Eventos globais (vazio)
 ├── forms/                              # Formulários (vazio)
 ├── mechanisms/                         # Mecanismos customizados (vazio)
@@ -28,17 +28,18 @@ fluig-viagens-app/
 └── .github/
     ├── workflows/
     │   ├── fluig-deploy.yml            # Pipeline de deploy
-    │   └── tests.yml                   # Pipeline de testes unitários
+    │   └── fluig-tests.yml             # Pipeline de testes unitários
     └── scripts/
         ├── setup-standalone-cli.sh     # Baixa ou reutiliza o binário do Fluig CLI
-        └── deploy-fluig-resource.mjs  # Autentica no servidor e publica os recursos
+        ├── fluig-deploy-utils.mjs      # Reúne validações, resolução de paths e execução do CLI
+        └── fluig-resource-deploy.mjs   # Mantém o fluxo principal do deploy
 ```
 
 ## Datasets
 
 | Arquivo | Descrição |
 |---|---|
-| `ds_viagens_paises.js` | Lista de países com código ISO, nome e sigla para uso em seleções de destino |
+| `ds-viagens-paises.js` | Lista de países com código ISO, nome e sigla para uso em seleções de destino |
 
 ## Testes unitários
 
@@ -49,10 +50,10 @@ Fluig real, os testes carregam cada script em um sandbox (`node:vm`) com mocks d
 ```
 tests/
 ├── helpers/
-│   ├── fluigMocks.js            # Mocks de DatasetBuilder e DatasetFieldType
-│   └── loadDatasetScript.js     # Executa um script de dataset num sandbox isolado
+│   ├── fluig-mocks.js             # Mocks de DatasetBuilder e DatasetFieldType
+│   └── load-dataset-script.js     # Executa um script de dataset num sandbox isolado
 └── datasets/
-    └── ds_viagens_paises.test.js
+    └── ds-viagens-paises.test.js
 ```
 
 Não há dependências externas: os testes usam o test runner nativo do Node.js (`node --test`).
@@ -75,13 +76,17 @@ npm test
 
 O fluxo de deploy funciona assim:
 
-1. O workflow executa `.github/scripts/setup-standalone-cli.sh`.
-2. O script tenta reutilizar o binário local em `.github/bin/fluig-cli`.
-3. Se o binário não existir ou tiver checksum divergente, faz o download do asset configurado em `cli.downloadUrl`.
-4. Quando `cli.sha256` estiver preenchido, o binário é validado antes do deploy.
-5. O script `.github/scripts/deploy-fluig-resource.mjs` cria um servidor com `fluig servers create`.
-6. O script autentica com `fluig auth login`.
-7. O deploy executa o `commandTemplate` definido em `fluig.json` para cada arquivo encontrado.
+1. O workflow `.github/workflows/fluig-tests.yml` valida as mudanças.
+2. Se os testes terminarem com sucesso na `main`, o workflow `.github/workflows/fluig-deploy.yml` é disparado.
+3. No disparo manual, o próprio workflow de deploy roda `npm test` antes de publicar.
+4. O workflow executa `.github/scripts/setup-standalone-cli.sh`.
+5. O script tenta reutilizar o binário local em `.github/bin/fluig-cli`.
+6. Se o binário não existir ou tiver checksum divergente, faz o download do asset configurado em `cli.downloadUrl`.
+7. Quando `cli.sha256` estiver preenchido, o binário é validado antes do deploy.
+8. O script `.github/scripts/fluig-resource-deploy.mjs` carrega o contexto do deploy e delega os detalhes ao módulo `.github/scripts/fluig-deploy-utils.mjs`.
+9. O utilitário cria um servidor com `fluig servers create`.
+10. O utilitário autentica com `fluig auth login`.
+11. O fluxo principal executa o `commandTemplate` definido em `fluig.json` para cada arquivo encontrado.
 
 ### Diagrama de funcionamento
 
@@ -101,7 +106,7 @@ flowchart LR
     G --> J
     J --> K[Cria servidor com fluig servers create]
     K --> L[Executa fluig auth login]
-    L --> M[Executa deploy-fluig-resource.mjs]
+    L --> M[Executa fluig-resource-deploy.mjs]
     M --> N[Publica recurso no Fluig]
 ```
 
@@ -165,9 +170,9 @@ Configuração atual do projeto:
 
 | Placeholder | Valor |
 |---|---|
-| `{{resource}}` | Caminho relativo do arquivo (ex.: `datasets/ds_viagens_paises.js`) |
+| `{{resource}}` | Caminho relativo do arquivo (ex.: `datasets/ds-viagens-paises.js`) |
 | `{{resourceAbsolute}}` | Caminho absoluto do arquivo |
-| `{{resourceName}}` | Nome do arquivo sem extensão (ex.: `ds_viagens_paises`) |
+| `{{resourceName}}` | Nome lógico enviado ao CLI, com hífens convertidos para `_` (ex.: `ds_viagens_paises`) |
 | `{{resourceType}}` | Tipo do recurso (ex.: `dataset`) |
 | `{{projectRoot}}` | Caminho absoluto da raiz do repositório |
 | `{{serverName}}` | Nome do servidor criado e autenticado pelo CLI |
@@ -186,7 +191,8 @@ O script `setup-standalone-cli.sh` segue um fluxo idempotente:
 
 ## Preparação do servidor
 
-Antes de publicar qualquer recurso, o `deploy-fluig-resource.mjs` executa automaticamente:
+Antes de publicar qualquer recurso, o fluxo principal do `fluig-resource-deploy.mjs`
+usa o módulo `fluig-deploy-utils.mjs` para executar automaticamente:
 
 ```
 fluig servers create --server-name <nome> --host <host> [--ssl] --port <porta> --username <user> --password <pass>
@@ -198,13 +204,28 @@ fluig auth login --server-name <nome> --username <user> --password <pass>
 - O `GITHUB_RUN_ID` é adicionado como sufixo ao nome do servidor para evitar colisões entre runs paralelas.
 - Em `dry_run`, os comandos são exibidos no log sem executar e sem vazar a senha.
 
+## Organização do script para aula
+
+Para facilitar o entendimento em sala, o deploy foi dividido em duas partes:
+
+- `fluig-resource-deploy.mjs`: mostra só o fluxo principal do deploy.
+- `fluig-deploy-utils.mjs`: concentra validações, leitura de configuração, descoberta de arquivos e montagem dos comandos.
+
+Assim, a aula pode focar primeiro na sequência principal:
+
+1. carregar configuração
+2. validar ambiente
+3. descobrir os arquivos
+4. autenticar no CLI
+5. executar o deploy de cada recurso
+
 ## Como usar
 
 ### Deploy manual
 
 1. Acesse **Actions › Fluig Deploy › Run workflow**.
 2. Selecione `resource_type = dataset`.
-3. Opcionalmente informe `resource_path` com o caminho relativo de um único arquivo (ex.: `datasets/ds_viagens_paises.js`). Deixe vazio para publicar todos os datasets.
+3. Opcionalmente informe `resource_path` com o caminho relativo de um único arquivo (ex.: `datasets/ds-viagens-paises.js`). Deixe vazio para publicar todos os datasets.
 4. Marque `dry_run` para apenas visualizar os comandos sem executar o deploy.
 
 ### Deploy automático
@@ -216,7 +237,7 @@ Em qualquer `push` para `main` que altere arquivos em:
 - `.github/workflows/fluig-deploy.yml`
 - `.github/scripts/**`
 
-O workflow dispara automaticamente e publica todos os arquivos de `datasets/`.
+O workflow de testes dispara primeiro. Se ele concluir com sucesso, o workflow de deploy é acionado e publica os arquivos de `datasets/`.
 
 ## Origem do CLI
 
@@ -231,4 +252,3 @@ O workflow dispara automaticamente e publica todos os arquivos de `datasets/`.
 - Use `cli.serverName` ou `FLUIG_SERVER_NAME` para padronizar o nome do servidor.
 - Prefira publicar novas versões do CLI em releases em vez de commitar binários no repositório.
 - Atualize sempre `downloadUrl` e `sha256` juntos ao trocar a versão do CLI.
-

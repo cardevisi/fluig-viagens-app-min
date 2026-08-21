@@ -2,10 +2,10 @@
 
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { loadDatasetScript } = require("../helpers/loadDatasetScript");
+const { loadDatasetScript } = require("../helpers/load-dataset-script");
 
-test("ds_viagens_paises.js", async (t) => {
-  const sandbox = loadDatasetScript("datasets/ds_viagens_paises.js");
+test("ds-viagens-paises.js", async (t) => {
+  const sandbox = loadDatasetScript("datasets/ds-viagens-paises.js");
   const dataset = sandbox.createDataset();
   const columns = dataset.getColumns();
   const rows = dataset.getRows();

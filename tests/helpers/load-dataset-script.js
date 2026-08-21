@@ -6,7 +6,7 @@ const vm = require("node:vm");
 const {
   createDatasetBuilderMock,
   createDatasetFieldTypeMock,
-} = require("./fluigMocks");
+} = require("./fluig-mocks");
 
 const projectRoot = path.join(__dirname, "..", "..");
 
@@ -15,7 +15,7 @@ const projectRoot = path.join(__dirname, "..", "..");
  * injetando as globais (DatasetBuilder, DatasetFieldType, console) que
  * o runtime Fluig normalmente disponibiliza.
  *
- * @param {string} relativePath Caminho relativo ao projeto (ex.: "datasets/ds_viagens_paises.js")
+ * @param {string} relativePath Caminho relativo ao projeto (ex.: "datasets/ds-viagens-paises.js")
  * @returns {vm.Context} sandbox contendo as funções/variáveis declaradas pelo script
  */
 function loadDatasetScript(relativePath) {
