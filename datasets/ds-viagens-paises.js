@@ -31,5 +31,7 @@ function createDataset() {
     ds.addRow(rows[i]);
   }
 
+  console.log("Datasets criados.", ds);
+
   return ds;
 }
