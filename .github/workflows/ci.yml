@@ -5,7 +5,6 @@ on:
     paths:
       - "datasets/**"
       - "tests/**"
-      - ".tools/**"
       - ".github/**"
       - "fluig.json"
       - "package.json"
@@ -13,7 +12,6 @@ on:
     paths:
       - "datasets/**"
       - "tests/**"
-      - ".tools/**"
       - ".github/**"
       - "fluig.json"
       - "package.json"
@@ -26,6 +24,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   test:
@@ -83,9 +82,13 @@ jobs:
         if: steps.datasets.outputs.paths == ''
         run: echo "Nenhum dataset alterado."
 
-      - name: Build da imagem com Fluig CLI
+      - name: Login no GHCR
         if: steps.datasets.outputs.paths != ''
-        run: docker build -t fluig-deploy -f .github/docker/fluig-cli/Dockerfile .
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Baixar imagem do Fluig CLI
+        if: steps.datasets.outputs.paths != ''
+        run: docker pull ghcr.io/cardevisi/fluig-cli:0.1.0
 
       - name: Deploy dos datasets alterados
         if: steps.datasets.outputs.paths != ''
@@ -106,4 +109,4 @@ jobs:
             -e FLUIG_SERVER_NAME \
             -e FLUIG_DATASET_PATHS \
             -e GITHUB_RUN_ID \
-            fluig-deploy
+            ghcr.io/cardevisi/fluig-cli:0.1.0

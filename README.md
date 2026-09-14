@@ -4,15 +4,15 @@ Exemplo mínimo para:
 
 - testar datasets Fluig com `node --test`
 - fazer deploy só dos datasets alterados
-- rodar o deploy dentro de uma imagem Docker com o Fluig CLI já embutido
+- rodar o deploy com uma imagem Docker pronta no GHCR
 
 ## O que foi simplificado
 
 - um workflow só: [`.github/workflows/ci.yml`](file:///Users/carlos.oliveira/TOTVS/fluig-viagens-app-min/.github/workflows/ci.yml)
 - um script só de deploy: [`.github/scripts/fluig-resource-deploy.mjs`](file:///Users/carlos.oliveira/TOTVS/fluig-viagens-app-min/.github/scripts/fluig-resource-deploy.mjs)
 - um teste de contrato só: [`tests/datasets.contract.test.js`](file:///Users/carlos.oliveira/TOTVS/fluig-viagens-app-min/tests/datasets.contract.test.js)
-- uma imagem Docker para o CLI: [`.github/docker/fluig-cli/Dockerfile`](file:///Users/carlos.oliveira/TOTVS/fluig-viagens-app-min/.github/docker/fluig-cli/Dockerfile)
-- binários standalone versionados em [`.tools/fluig-studio-cli-v0.1.0/standalone`](file:///Users/carlos.oliveira/TOTVS/fluig-viagens-app-min/.tools/fluig-studio-cli-v0.1.0/standalone)
+- uma imagem Docker publicada no GHCR: `ghcr.io/cardevisi/fluig-cli:0.1.0`
+- um Dockerfile local para gerar essa imagem quando o CLI mudar: [`.github/docker/fluig-cli/Dockerfile`](file:///Users/carlos.oliveira/TOTVS/fluig-viagens-app-min/.github/docker/fluig-cli/Dockerfile)
 
 ## Testes
 
@@ -37,20 +37,26 @@ Fluxo do workflow:
 
 1. roda os testes
 2. se estiver em `main` e os testes passarem, descobre quais datasets mudaram
-3. faz build da imagem Docker com o Fluig CLI
+3. faz login no GHCR e baixa a imagem pronta do Fluig CLI
 4. publica apenas os datasets alterados
 
 No `workflow_dispatch`, você pode informar manualmente uma lista de datasets, um por linha.
 
-## Docker com CLI embutido
+## Imagem do CLI
 
-A imagem é montada a partir de `node:22-bookworm-slim` e copia o binário Linux direto de [`.tools/fluig-studio-cli-v0.1.0/standalone`](file:///Users/carlos.oliveira/TOTVS/fluig-viagens-app-min/.tools/fluig-studio-cli-v0.1.0/standalone).
+O pipeline usa a imagem:
+
+```text
+ghcr.io/cardevisi/fluig-cli:0.1.0
+```
+
+Essa imagem já contém o Fluig CLI e é baixada no deploy.
 
 Assim, o runner não precisa:
 
 - baixar o CLI em step separado
-- instalar Node com `setup-node` para o deploy
-- manter scripts extras de bootstrap
+- buildar a imagem do CLI a cada execução
+- manter binários grandes dentro do repositório
 
 ## Secrets
 
@@ -67,9 +73,6 @@ Opcional:
 ## Estrutura essencial
 
 ```text
-.tools/
-  fluig-studio-cli-v0.1.0/standalone/
-
 datasets/
   ds-viagens-paises.js
 
