@@ -1,0 +1,6 @@
+**
+!.tools/
+!.tools/fluig-studio-cli-v0.1.0/
+!.tools/fluig-studio-cli-v0.1.0/standalone/
+!.tools/fluig-studio-cli-v0.1.0/standalone/fluig-cli-linux-arm64
+!.tools/fluig-studio-cli-v0.1.0/standalone/fluig-cli-linux-x64

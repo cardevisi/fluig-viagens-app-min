@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - "datasets/**"
+      - "tests/**"
+      - ".tools/**"
+      - ".github/**"
+      - "fluig.json"
+      - "package.json"
+  pull_request:
+    paths:
+      - "datasets/**"
+      - "tests/**"
+      - ".tools/**"
+      - ".github/**"
+      - "fluig.json"
+      - "package.json"
+  workflow_dispatch:
+    inputs:
+      dataset_paths:
+        description: Lista opcional de datasets, um por linha
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: node:22-bookworm-slim
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Rodar testes
+        run: npm test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: >
+      needs.test.result == 'success' &&
+      (
+        github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main')
+      )
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Descobrir datasets alterados
+        id: datasets
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            DATASETS="${{ github.event.inputs.dataset_paths }}"
+          else
+            BASE="${{ github.event.before }}"
+            if [[ -z "$BASE" || "$BASE" == "0000000000000000000000000000000000000000" ]]; then
+              BASE="$(git rev-list --max-parents=0 HEAD | tail -n 1)"
+            fi
+            DATASETS="$(git diff --name-only "$BASE" "${GITHUB_SHA}" | grep '^datasets/.*\.js$' || true)"
+          fi
+
+          echo "Selecionados:"
+          printf '%s\n' "$DATASETS"
+
+          {
+            echo "paths<<EOF"
+            printf '%s\n' "$DATASETS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Encerrar sem deploy
+        if: steps.datasets.outputs.paths == ''
+        run: echo "Nenhum dataset alterado."
+
+      - name: Build da imagem com Fluig CLI
+        if: steps.datasets.outputs.paths != ''
+        run: docker build -t fluig-deploy -f .github/docker/fluig-cli/Dockerfile .
+
+      - name: Deploy dos datasets alterados
+        if: steps.datasets.outputs.paths != ''
+        env:
+          FLUIG_BASE_URL: ${{ secrets.FLUIG_BASE_URL }}
+          FLUIG_USERNAME: ${{ secrets.FLUIG_USERNAME }}
+          FLUIG_PASSWORD: ${{ secrets.FLUIG_PASSWORD }}
+          FLUIG_SERVER_NAME: ${{ vars.FLUIG_SERVER_NAME }}
+          FLUIG_DATASET_PATHS: ${{ steps.datasets.outputs.paths }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          docker run --rm \
+            -v "${PWD}:/workspace" \
+            -w /workspace \
+            -e FLUIG_BASE_URL \
+            -e FLUIG_USERNAME \
+            -e FLUIG_PASSWORD \
+            -e FLUIG_SERVER_NAME \
+            -e FLUIG_DATASET_PATHS \
+            -e GITHUB_RUN_ID \
+            fluig-deploy

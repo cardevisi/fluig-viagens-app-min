@@ -2,7 +2,7 @@
   "name": "fluig-viagens-app",
   "version": "1.0.0",
   "private": true,
-  "description": "Projeto de viagens com pipeline de deploy automatizado via GitHub Actions",
+  "description": "Exemplo minimo de testes e deploy de datasets Fluig",
   "scripts": {
     "test": "node --test"
   },

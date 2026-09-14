@@ -1,26 +1,7 @@
 {
   "name": "fluig-viagens-app",
-  "description": "Projeto de viagens com pipeline de deploy automatizado via GitHub Actions",
-  "version": "1.0.0",
-  "author": "TOTVS",
-  "license": "MIT",
-  "fluigVersion": "2.0.0",
-  "type": "application",
   "cli": {
-    "mode": "standalone",
-    "downloadUrl": "https://github.com/cardevisi/fluig-viagens-app/releases/download/v1.0.0/fluig-cli-linux-x64",
-    "sha256": "9bcd2734138bef264b596a6d6a071a887e9b9ea988db7ccb01139a338503cbc2",
-    "serverName": "fluig-ci",
-    "outputPath": ".github/bin/fluig-cli"
-  },
-  "resources": {
-    "dataset": {
-      "directory": "datasets",
-      "extensions": [".js"]
-    }
-  },
-  "deploy": {
-    "defaultResourceType": "dataset",
-    "commandTemplate": "export resource --projectPath {{projectRoot}} --resourceType {{resourceType}} --resourceName {{resourceName}} --serverName {{serverName}}"
+    "standaloneDir": ".tools/fluig-studio-cli-v0.1.0/standalone",
+    "serverName": "fluig-ci"
   }
 }
