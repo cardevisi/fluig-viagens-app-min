@@ -24,6 +24,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   test:
@@ -80,6 +81,10 @@ jobs:
       - name: Encerrar sem deploy
         if: steps.datasets.outputs.paths == ''
         run: echo "Nenhum dataset alterado."
+
+      - name: Login no GHCR
+        if: steps.datasets.outputs.paths != '' && secrets.GHCR_TOKEN != ''
+        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
 
       - name: Baixar imagem do Fluig CLI
         if: steps.datasets.outputs.paths != ''
