@@ -52,7 +52,7 @@ async function main() {
   ]);
 
   for (const dataset of datasets) {
-    const resourceName = path.basename(dataset, ".js").replace(/-/g, "_");
+    const resourceName = path.basename(dataset, ".js");
     console.log(`\nDeploy: ${dataset}`);
     await runCli([
       "export",

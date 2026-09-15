@@ -4,7 +4,7 @@ WORKDIR /workspace
 
 ARG TARGETARCH
 
-COPY .tools/fluig-studio-cli-v0.1.0/standalone /tmp/fluig-standalone
+COPY .tools/fluig-studio-cli-v0.1.0-mvp.4/standalone /tmp/fluig-standalone
 
 RUN case "${TARGETARCH}" in \
     "amd64") cp /tmp/fluig-standalone/fluig-cli-linux-x64 /usr/local/bin/fluig ;; \
