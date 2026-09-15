@@ -32,6 +32,7 @@ function createDataset() {
   }
 
   console.log("Datasets criados.", ds);
+  console.log("Datasets criados.", ds);
 
   return ds;
 }
