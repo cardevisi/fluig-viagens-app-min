@@ -83,12 +83,12 @@ jobs:
         run: echo "Nenhum dataset alterado."
 
       - name: Login no GHCR
-        if: steps.datasets.outputs.paths != ''
+        #if: steps.datasets.outputs.paths != ''
         run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
 
       - name: Baixar imagem do Fluig CLI
-        if: steps.datasets.outputs.paths != ''
+        #if: steps.datasets.outputs.paths != ''
         run: docker pull ghcr.io/cardevisi/fluig-cli:0.1.0
 
       - name: Deploy dos datasets alterados
