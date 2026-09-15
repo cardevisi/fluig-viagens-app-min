@@ -10,7 +10,7 @@ function createDataset() {
     ["BOL", "Bolívia", "BO"],
     ["PER", "Peru", "PE"],
     ["COL", "Colômbia", "CO"],
-    ["VEN", "Venezuela", "VE"],
+    // ["VEN", "Venezuela", "VE"],
     ["MEX", "México", "MX"],
     ["DEU", "Alemanha", "DE"],
     ["ESP", "Espanha", "ES"],
