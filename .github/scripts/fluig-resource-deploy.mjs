@@ -8,6 +8,9 @@ import { spawn } from "node:child_process";
 const workspace = process.cwd();
 const cliPath = process.env.FLUIG_CLI_PATH || "/usr/local/bin/fluig";
 
+// Orquestra o fluxo completo de deploy:
+// lê a configuração, resolve os datasets-alvo, autentica no Fluig CLI
+// e publica cada recurso selecionado.
 async function main() {
   const config = await readConfig();
   const datasets = await resolveDatasets();
@@ -24,6 +27,8 @@ async function main() {
     console.log(`- ${dataset}`);
   }
 
+  // O script cria um servidor lógico e faz login no CLI antes do export
+  // para que os próximos comandos reutilizem a mesma conexão autenticada.
   await runCli([
     "servers",
     "create",
@@ -52,7 +57,9 @@ async function main() {
   ]);
 
   for (const dataset of datasets) {
-    const resourceName = path.basename(dataset, ".js").replace(/-/g, "_");
+    // O nome lógico do recurso precisa bater com o nome físico do arquivo
+    // para o CLI localizar corretamente o dataset no projeto.
+    const resourceName = path.basename(dataset, ".js");
     console.log(`\nDeploy: ${dataset}`);
     await runCli([
       "export",
@@ -69,11 +76,15 @@ async function main() {
   }
 }
 
+// Lê a configuração mínima do projeto usada para montar o nome do servidor
+// e outros parâmetros auxiliares do deploy.
 async function readConfig() {
   const file = await readFile(path.join(workspace, "fluig.json"), "utf8");
   return JSON.parse(file);
 }
 
+// Monta os dados de conexão a partir das variáveis de ambiente do CI
+// e normaliza host, porta, SSL e nome do servidor.
 function getConnection(config) {
   const baseUrl = process.env.FLUIG_BASE_URL?.trim();
   const username = process.env.FLUIG_USERNAME?.trim();
@@ -100,6 +111,8 @@ function getConnection(config) {
   };
 }
 
+// Permite que o pipeline faça deploy seletivo quando FLUIG_DATASET_PATHS
+// estiver preenchido; caso contrário, publica todos os datasets do projeto.
 async function resolveDatasets() {
   const selected = splitDatasetList(process.env.FLUIG_DATASET_PATHS || "");
   if (selected.length > 0) {
@@ -109,6 +122,8 @@ async function resolveDatasets() {
   return listDatasets(path.join(workspace, "datasets"));
 }
 
+// Varre recursivamente a pasta datasets e devolve caminhos relativos,
+// que são os formatos esperados pelo restante do script.
 async function listDatasets(dir, baseDir = dir) {
   let entries = [];
 
@@ -144,6 +159,8 @@ async function listDatasets(dir, baseDir = dir) {
   return files.sort();
 }
 
+// Aceita lista manual separada por quebra de linha ou vírgula,
+// mantendo apenas caminhos válidos de datasets JavaScript.
 function splitDatasetList(value) {
   return value
     .split(/\r?\n|,/)
@@ -151,6 +168,8 @@ function splitDatasetList(value) {
     .filter((item) => item.startsWith("datasets/") && item.endsWith(".js"));
 }
 
+// Normaliza o nome do servidor para evitar caracteres inválidos
+// quando o identificador vier do projeto ou do ambiente do CI.
 function sanitize(value) {
   return (
     String(value)
@@ -159,6 +178,8 @@ function sanitize(value) {
   );
 }
 
+// Encapsula a execução do binário do Fluig CLI para manter
+// o tratamento de erro centralizado em um único ponto.
 async function runCli(args) {
   await new Promise((resolve, reject) => {
     const child = spawn(cliPath, args, {

@@ -2,5 +2,5 @@
 .github/.DS_Store
 node_modules/
 coverage/
-.tools/fluig-studio-cli-v0.1.0/
+.tools/fluig-studio-cli-v0.1.0-mvp.4
 

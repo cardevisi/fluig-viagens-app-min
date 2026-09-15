@@ -2,9 +2,13 @@
   "name": "fluig-viagens-app",
   "version": "1.0.0",
   "private": true,
-  "description": "Exemplo minimo de testes e deploy de datasets Fluig",
+  "description": "Exemplo mínimo de testes e deploy de datasets Fluig",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "codelab:build": "node docs/build-codelab.mjs",
+    "codelab": "npm run codelab:build && node docs/serve-codelab.mjs",
+    "codelab:no-open": "npm run codelab:build && NO_OPEN=1 node docs/serve-codelab.mjs",
+    "codelabs": "npm run codelab"
   },
   "engines": {
     "node": ">=20"

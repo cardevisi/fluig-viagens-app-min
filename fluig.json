@@ -1,7 +1,10 @@
 {
   "name": "fluig-viagens-app",
+  "description": "Projeto de viagens com dataset e teste de contrato",
+  "version": "1.0.0",
+  "author": "Carlos Oliveira",
+  "license": "UNLICENSED",
   "cli": {
-    "standaloneDir": ".tools/fluig-studio-cli-v0.1.0/standalone",
     "serverName": "fluig-ci"
   }
 }
