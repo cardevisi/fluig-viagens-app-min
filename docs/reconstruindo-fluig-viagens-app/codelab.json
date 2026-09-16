@@ -3,12 +3,12 @@
   "format": "html",
   "prefix": "https://storage.googleapis.com",
   "mainga": "UA-49880327-14",
-  "updated": "2026-08-23T00:50:01-03:00",
+  "updated": "2026-09-15T21:28:28-03:00",
   "id": "reconstruindo-fluig-viagens-app",
-  "duration": 60,
-  "title": "Contribuindo com o fluig-viagens-app: dataset, testes e pipeline de deploy",
+  "duration": 63,
+  "title": "Contribuindo com o fluig-viagens-app-min: dataset, teste de contrato e pipeline simplificado",
   "authors": "TOTVS - Fluig Studio",
-  "summary": "Reconstrua do zero o projeto fluig-viagens-app — dataset, testes automatizados e pipeline de deploy com GitHub Actions.",
+  "summary": "Reconstrua do zero o projeto fluig-viagens-app-min com dataset, teste de contrato e pipeline CI/CD simplificado.",
   "source": "docs/codelab-fluig-viagens-app.md",
   "theme": "",
   "status": [
@@ -27,6 +27,6 @@
     "nodejs",
     "web"
   ],
-  "feedback": "https://github.com/totvs/fluig-viagens-app/issues",
+  "feedback": "https://github.com/cardevisi/fluig-viagens-app-min/issues",
   "url": "reconstruindo-fluig-viagens-app"
 }

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <meta name="theme-color" content="#4F7DC9">
   <meta charset="UTF-8">
-  <title>Contribuindo com o fluig-viagens-app: dataset, testes e pipeline de deploy</title>
+  <title>Contribuindo com o fluig-viagens-app-min: dataset, teste de contrato e pipeline simplificado</title>
   <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
   <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
@@ -17,166 +17,118 @@
     .error {
       color: red;
     }
-    .copyable-code {
-      position: relative;
-    }
-    .copy-code-button {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      border: 0;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.12);
-      color: #fff;
-      cursor: pointer;
-    }
-    .copy-code-button svg {
-      width: 18px;
-      height: 18px;
-      fill: currentColor;
-    }
-    .copy-code-button:hover {
-      background: rgba(255, 255, 255, 0.22);
-    }
-    .copy-code-button::after {
-      content: attr(aria-label);
-      position: absolute;
-      top: calc(100% + 6px);
-      right: 0;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background: rgba(32, 33, 36, 0.92);
-      color: #fff;
-      font: 500 12px/1.2 Roboto, sans-serif;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateY(-2px);
-      transition: opacity 0.15s ease, transform 0.15s ease;
-    }
-    .copy-code-button:hover::after,
-    .copy-code-button:focus-visible::after {
-      opacity: 1;
-      transform: translateY(0);
-    }
   </style>
 </head>
 <body>
-  <google-codelab-analytics gaid="UA-49880327-14" ga4id=""></google-codelab-analytics>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
   <google-codelab codelab-gaid=""
-                  codelab-ga4id=""
                   id="reconstruindo-fluig-viagens-app"
-                  title="Contribuindo com o fluig-viagens-app: dataset, testes e pipeline de deploy"
+                  title="Contribuindo com o fluig-viagens-app-min: dataset, teste de contrato e pipeline simplificado"
                   environment="web"
-                  feedback-link="https://github.com/totvs/fluig-viagens-app/issues">
+                  feedback-link="https://github.com/cardevisi/fluig-viagens-app-min/issues">
     
       <google-codelab-step label="Visão geral" duration="3">
-        <p>Nesta aula você irá contribuir com um projeto Fluig real chamado <strong>fluig-viagens-app</strong>, onde irá desenvolver um dataset responsável por fornecer os dados para o select de países, com testes unitários em Node.js e um pipeline de GitHub Actions que fará o deploy automático no servidor Fluig.</p>
-<p>Ao longo do codelab, você vai criar e testar esse dataset, organizar a automação de testes e entender como o deploy é executado com o Fluig CLI dentro do pipeline.</p>
-<aside class="special"><p> Muitos dos conteúdos deste codelab foram preparados para <strong>copiar e colar</strong> direto no terminal ou no editor. Para facilitar o uso do botão de cópia, os comandos aparecem em blocos com linguagem explícita e sem prefixos como <code>$</code> ou <code>%</code>.</p>
+        <p>Neste codelab, você vai trabalhar em uma versão enxuta do projeto <strong>fluig-viagens-app-min</strong>. A proposta é ensinar o fluxo completo sem espalhar a lógica em muitos arquivos: um dataset, um teste de contrato e um único workflow de CI/CD.</p>
+<p>Ao final, você terá um projeto que:</p>
+<ul>
+<li>publica apenas datasets alterados;</li>
+<li>valida os scripts com <code>node --test</code>;</li>
+<li>usa uma imagem Docker pronta com o Fluig CLI no GHCR;</li>
+<li>executa deploy manual ou automático a partir do mesmo arquivo <code>ci.yml</code>.</li>
+</ul>
+<aside class="special"><p> O projeto foi reduzido de propósito para a aula ficar mais direta. Em vez de vários helpers e workflows separados, você vai aprender o caminho principal que já está em uso no repositório.</p>
 </aside>
 <h2 is-upgraded>Atividades deste laboratório</h2>
 <ul>
-<li>Clonar um projeto base já preparado para a aula.</li>
-<li>Completar os arquivos principais colando trechos de código guiados.</li>
-<li>Desenvolver um dataset Fluig para listar países.</li>
-<li>Testar o dataset fora do servidor usando <code>node --test</code>.</li>
-<li>Configurar o workflow de testes contínuos.</li>
-<li>Entender o fluxo de deploy com o Fluig CLI e validar a execução em <code>dry_run</code>.</li>
+<li>Clonar o repositório base.</li>
+<li>Entender a estrutura mínima do projeto.</li>
+<li>Conferir o dataset <code>ds-viagens-paises.js</code>.</li>
+<li>Validar o teste de contrato com <code>npm test</code>.</li>
+<li>Ler o workflow <code>.github/workflows/ci.yml</code>.</li>
+<li>Entender como o deploy roda dentro do container <code>ghcr.io/cardevisi/fluig-cli:0.1.0</code>.</li>
 </ul>
 <h2 is-upgraded>O que você vai aprender</h2>
 <ul>
-<li>Como escrever um dataset Fluig simples e reutilizável.</li>
-<li>Como simular globais do Fluig para rodar testes localmente.</li>
-<li>Como conduzir a implementação com blocos reais de copiar e colar.</li>
-<li>Como organizar um pipeline de testes que protege a branch <code>main</code>.</li>
-<li>Como separar o deploy em fluxo principal e módulos menores por responsabilidade.</li>
-<li>Como o GitHub Actions orquestra testes, autenticação e publicação de recursos.</li>
+<li>Como escrever um dataset Fluig simples.</li>
+<li>Como testar datasets fora do servidor com sandbox em <code>node:vm</code>.</li>
+<li>Como detectar datasets alterados no GitHub Actions.</li>
+<li>Como encapsular o Fluig CLI em Docker para manter o pipeline limpo.</li>
+<li>Como usar um workflow unico para teste e deploy.</li>
 </ul>
 <h2 is-upgraded>O que você vai construir</h2>
-<pre><code language="language-text" class="language-text">fluig-viagens-app/
-├── fluig.json                          # Configuração do projeto, do CLI e do deploy
-├── package.json                        # Script de teste (node --test)
-├── .gitignore
+<pre><code language="language-text" class="language-text">fluig-viagens-app-min/
 ├── datasets/
-│   └── ds-viagens-paises.js            # Dataset de países para uso em formulários de viagem
+│   └── ds-viagens-paises.js
 ├── tests/
-│   ├── helpers/                        # Mocks de globais Fluig e loader de scripts via vm
-│   └── datasets/
-│       └── ds-viagens-paises.test.js   # Testes unitários do dataset de países
-├── events/ forms/ mechanisms/ reports/ # Pastas de recursos (vazias por enquanto)
-├── wcm/layout/ wcm/widget/
-├── workflow/diagrams/ workflow/literals/ workflow/scripts/
-└── .github/
-    ├── workflows/
-    │   ├── fluig-tests.yml             # Pipeline de testes unitários
-    │   └── fluig-deploy.yml            # Pipeline de deploy
-    └── scripts/
-        ├── setup-standalone-cli.sh     # Usado internamente pelo workflow
-        ├── fluig-deploy-config.mjs     # Leitura de config e validação de ambiente
-        ├── fluig-deploy-resources.mjs  # Descoberta de arquivos e nome lógico do recurso
-        ├── fluig-deploy-cli.mjs        # Autenticação, comandos e execução do CLI
-        ├── fluig-deploy-utils.mjs      # Fachada de compatibilidade para os módulos
-        └── fluig-resource-deploy.mjs   # Mantém visível o fluxo principal do CLI
+│   └── datasets.contract.test.js
+├── .github/
+│   ├── docker/
+│   │   └── fluig-cli/
+│   │       └── Dockerfile
+│   ├── scripts/
+│   │   └── fluig-resource-deploy.mjs
+│   └── workflows/
+│       └── ci.yml
+├── docs/
+│   └── codelab-fluig-viagens-app.md
+├── fluig.json
+└── package.json
 </code></pre>
 
 
       </google-codelab-step>
     
       <google-codelab-step label="Pré-requisitos" duration="3">
-        <p>Verifique cada item abaixo antes de começar. Cole os comandos no seu terminal.</p>
+        <p>Você vai precisar de:</p>
 <ol type="1">
-<li><strong>Node.js 20 ou superior</strong> (o projeto usa o test runner nativo do Node):</li>
+<li><strong>Node.js 20 ou superior</strong></li>
 </ol>
 <pre><code language="language-bash" class="language-bash">node --version
 </code></pre>
 <ol type="1" start="2">
-<li><strong>Git</strong> instalado e configurado:</li>
+<li><strong>Git</strong></li>
 </ol>
 <pre><code language="language-bash" class="language-bash">git --version
 </code></pre>
 <ol type="1" start="3">
-<li>Uma conta no <strong>GitHub</strong> (para criar o repositório remoto e os pipelines).</li>
+<li>Uma conta no <strong>GitHub</strong></li>
+<li>Acesso a um ambiente Fluig apenas se quiser executar o deploy real.</li>
 </ol>
-<aside class="warning"><p> Você <strong>não precisa</strong> de um servidor Fluig real para concluir este codelab. O pipeline de deploy será testado em modo <code>dry_run</code>, que apenas exibe os comandos sem executar nada em um servidor de verdade. Se você tiver acesso a um ambiente Fluig, poderá usá-lo no último passo.</p>
+<aside class="special"><p> O pipeline foi desenhado para que a parte de teste possa ser estudada mesmo sem acesso imediato a um servidor Fluig.</p>
 </aside>
 
 
       </google-codelab-step>
     
-      <google-codelab-step label="Clone o projeto no GitHub" duration="3">
-        <p>Se o repositório já existir no GitHub, o primeiro passo é clonar esse projeto para a sua máquina. No exemplo abaixo, usamos a URL SSH do repositório:</p>
-<p>Repositório: <a href="https://github.com/cardevisi/fluig-viagens-app" target="_blank">https://github.com/cardevisi/fluig-viagens-app</a></p>
-<pre><code language="language-bash" class="language-bash">git clone git@github.com:cardevisi/fluig-viagens-app.git
-cd fluig-viagens-app
+      <google-codelab-step label="Clone o projeto" duration="2">
+        <p>Use a URL do repositório da turma:</p>
+<pre><code language="language-bash" class="language-bash">git clone git@github.com:cardevisi/fluig-viagens-app-min.git
+cd fluig-viagens-app-min
 </code></pre>
 <p class="image-container"><img alt="Tela de clone do GitHub" src="img/cb7cbd077d7f7ea5.png"></p>
-<aside class="special"><p> Se você já configurou sua chave SSH no GitHub, esse formato <code>git@github.com:...</code> costuma ser o mais prático para trabalhar no dia a dia.</p>
-</aside>
 
 
       </google-codelab-step>
     
-      <google-codelab-step label="Fluxo do deploy" duration="3">
-        <p>Antes de entrar nos arquivos, vale ver o fluxo completo do deploy em uma visão mais alta. A ideia é enxergar primeiro a sequência principal e depois detalhar cada parte ao longo da aula.</p>
-<p class="image-container"><img alt="Fluxo do deploy" src="img/a0e8ff14b07ad361.png"></p>
-<p>No fluxo automatico, o deploy so continua depois que o workflow <code>Tests</code> termina com sucesso na branch <code>main</code>. No fluxo manual, o proprio workflow de deploy executa o <code>npm test</code> antes de seguir.</p>
+      <google-codelab-step label="Estrutura mínima do projeto" duration="3">
+        <p>O projeto foi reduzido para manter o foco em três blocos:</p>
+<ol type="1">
+<li><code>datasets/</code>: onde ficam os datasets Fluig.</li>
+<li><code>tests/</code>: onde ficam os testes automatizados.</li>
+<li><code>.github/</code>: onde ficam Dockerfile, script de deploy e workflow.</li>
+</ol>
+<p>Esse recorte é suficiente para demonstrar uma esteira completa sem depender de forms, widgets ou workflow scripts adicionais.</p>
 
 
       </google-codelab-step>
     
-      <google-codelab-step label="package.json: confira o comando de teste" duration="2">
-        <p>Neste codelab, o projeto base já vem pronto. Aqui o objetivo é apenas conferir o comando de teste que a turma vai usar durante a aula.</p>
+      <google-codelab-step label="package.json: comando de teste" duration="2">
+        <p>O <code>package.json</code> atual e propositalmente simples:</p>
 <pre><code language="language-json" class="language-json">{
   &#34;name&#34;: &#34;fluig-viagens-app&#34;,
   &#34;version&#34;: &#34;1.0.0&#34;,
   &#34;private&#34;: true,
-  &#34;description&#34;: &#34;Projeto de viagens com pipeline de deploy automatizado via GitHub Actions&#34;,
+  &#34;description&#34;: &#34;Exemplo minimo de testes e deploy de datasets Fluig&#34;,
   &#34;scripts&#34;: {
     &#34;test&#34;: &#34;node --test&#34;
   },
@@ -185,412 +137,342 @@ cd fluig-viagens-app
   }
 }
 </code></pre>
-<p>Repare que <strong>não há dependências externas</strong>: <code>node --test</code> é o test runner nativo do Node.js (disponível desde a versão 18+), então não é preciso instalar bibliotecas extras para rodar os testes.</p>
-
-
-      </google-codelab-step>
-    
-      <google-codelab-step label="fluig.json: configuração central do projeto" duration="5">
-        <p>O <code>fluig.json</code> é o arquivo que descreve o projeto e como fazer o deploy dos recursos. É a peça central que os scripts de CI vão ler.</p>
-<pre><code language="language-json" class="language-json">{
-  &#34;name&#34;: &#34;fluig-viagens-app&#34;,
-  &#34;description&#34;: &#34;Projeto de viagens com pipeline de deploy automatizado via GitHub Actions&#34;,
-  &#34;version&#34;: &#34;1.0.0&#34;,
-  &#34;author&#34;: &#34;TOTVS&#34;,
-  &#34;license&#34;: &#34;MIT&#34;,
-  &#34;fluigVersion&#34;: &#34;2.0.0&#34;,
-  &#34;type&#34;: &#34;application&#34;,
-  &#34;cli&#34;: {
-    &#34;mode&#34;: &#34;standalone&#34;,
-    &#34;downloadUrl&#34;: &#34;https://github.com/SEU_USUARIO/fluig-viagens-app/releases/download/v1.0.0/fluig-cli-linux-x64&#34;,
-    &#34;sha256&#34;: &#34;&#34;,
-    &#34;serverName&#34;: &#34;fluig-ci&#34;,
-    &#34;outputPath&#34;: &#34;.github/bin/fluig-cli&#34;
-  },
-  &#34;resources&#34;: {
-    &#34;dataset&#34;: {
-      &#34;directory&#34;: &#34;datasets&#34;,
-      &#34;extensions&#34;: [&#34;.js&#34;]
-    }
-  },
-  &#34;deploy&#34;: {
-    &#34;defaultResourceType&#34;: &#34;dataset&#34;,
-    &#34;commandTemplate&#34;: &#34;export resource --projectPath &#123;&#123;projectRoot}} --resourceType &#123;&#123;resourceType}} --resourceName &#123;&#123;resourceName}} --serverName &#123;&#123;serverName}}&#34;
-  }
-}
-</code></pre>
-<aside class="warning"><p> Substitua <code>SEU_USUARIO</code> pelo seu usuário/organização do GitHub. Deixamos <code>sha256</code> vazio de propósito: sem um valor configurado, o pipeline reaproveita o binário local sem validar o checksum. Preencha esse campo assim que publicar uma release real do CLI na sua esteira.</p>
-</aside>
-<h2 is-upgraded>Entendendo cada bloco</h2>
-<table>
-<tr><td colspan="1" rowspan="1"><p>Chave</p>
-</td><td colspan="1" rowspan="1"><p>Para que serve</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>cli.mode</code></p>
-</td><td colspan="1" rowspan="1"><p><code>standalone</code> = o CLI é baixado como binário, sem instalação via npm</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>cli.downloadUrl</code></p>
-</td><td colspan="1" rowspan="1"><p>URL do asset de release do GitHub de onde o binário é baixado</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>cli.sha256</code></p>
-</td><td colspan="1" rowspan="1"><p>Checksum esperado do binário, para validar integridade (opcional)</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>cli.serverName</code></p>
-</td><td colspan="1" rowspan="1"><p>Nome lógico do servidor que o CLI vai registrar</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>cli.outputPath</code></p>
-</td><td colspan="1" rowspan="1"><p>Onde o binário baixado é salvo localmente (cache do workspace)</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>resources.dataset.directory</code></p>
-</td><td colspan="1" rowspan="1"><p>Pasta varrida em busca de recursos do tipo <code>dataset</code></p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>deploy.commandTemplate</code></p>
-</td><td colspan="1" rowspan="1"><p>Comando executado para cada recurso encontrado, com placeholders</p>
-</td></tr>
-</table>
-<h2 is-upgraded>Placeholders do <code>commandTemplate</code></h2>
-<table>
-<tr><td colspan="1" rowspan="1"><p>Placeholder</p>
-</td><td colspan="1" rowspan="1"><p>Valor</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>&#123;&#123;resource}}</code></p>
-</td><td colspan="1" rowspan="1"><p>Caminho relativo do arquivo (ex.: <code>datasets/ds-viagens-paises.js</code>)</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>&#123;&#123;resourceAbsolute}}</code></p>
-</td><td colspan="1" rowspan="1"><p>Caminho absoluto do arquivo</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>&#123;&#123;resourceName}}</code></p>
-</td><td colspan="1" rowspan="1"><p>Nome lógico enviado ao CLI, com hífens convertidos para <code>_</code> (ex.: <code>ds_viagens_paises</code>)</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>&#123;&#123;resourceType}}</code></p>
-</td><td colspan="1" rowspan="1"><p>Tipo do recurso (ex.: <code>dataset</code>)</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>&#123;&#123;projectRoot}}</code></p>
-</td><td colspan="1" rowspan="1"><p>Caminho absoluto da raiz do repositório</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>&#123;&#123;serverName}}</code></p>
-</td><td colspan="1" rowspan="1"><p>Nome do servidor criado e autenticado pelo CLI</p>
-</td></tr>
-</table>
-
-
-      </google-codelab-step>
-    
-      <google-codelab-step label="Dataset de países" duration="8">
-        <p>Abra o arquivo <code>datasets/ds-viagens-paises.js</code>. O projeto base já traz a estrutura pronta e neste passo a ideia é colar os trechos que faltam para o dataset funcionar corretamente.</p>
-<p>Scripts de dataset do Fluig rodam no engine JavaScript do servidor, que injeta globais como <code>DatasetBuilder</code> e <code>DatasetFieldType</code> automaticamente — você não precisa importar nada.</p>
-<h2 is-upgraded>Trecho 1: colunas do dataset</h2>
-<p>Cole este bloco logo depois de <code>var dataset = DatasetBuilder.newDataset();</code>:</p>
-<pre><code language="language-javascript" class="language-javascript">// Define as colunas do dataset
-dataset.addColumn(&#34;codigo&#34;, DatasetFieldType.STRING);
-dataset.addColumn(&#34;nome&#34;, DatasetFieldType.STRING);
-dataset.addColumn(&#34;sigla&#34;, DatasetFieldType.STRING);
-</code></pre>
-<h2 is-upgraded>Trecho 2: lista inicial de países</h2>
-<p>Cole este bloco no lugar da lista vazia de <code>paises</code>:</p>
-<pre><code language="language-javascript" class="language-javascript">var paises = [
-  { codigo: &#34;BRA&#34;, nome: &#34;Brasil&#34;, sigla: &#34;BR&#34; },
-  { codigo: &#34;USA&#34;, nome: &#34;Estados Unidos&#34;, sigla: &#34;US&#34; },
-  { codigo: &#34;ARG&#34;, nome: &#34;Argentina&#34;, sigla: &#34;AR&#34; },
-  { codigo: &#34;CHL&#34;, nome: &#34;Chile&#34;, sigla: &#34;CL&#34; },
-  { codigo: &#34;URY&#34;, nome: &#34;Uruguai&#34;, sigla: &#34;UY&#34; },
-  { codigo: &#34;PRY&#34;, nome: &#34;Paraguai&#34;, sigla: &#34;PY&#34; },
-  { codigo: &#34;BOL&#34;, nome: &#34;Bolívia&#34;, sigla: &#34;BO&#34; },
-  { codigo: &#34;PER&#34;, nome: &#34;Peru&#34;, sigla: &#34;PE&#34; },
-  { codigo: &#34;COL&#34;, nome: &#34;Colômbia&#34;, sigla: &#34;CO&#34; },
-  { codigo: &#34;VEN&#34;, nome: &#34;Venezuela&#34;, sigla: &#34;VE&#34; },
-  { codigo: &#34;MEX&#34;, nome: &#34;México&#34;, sigla: &#34;MX&#34; },
-  { codigo: &#34;DEU&#34;, nome: &#34;Alemanha&#34;, sigla: &#34;DE&#34; },
-  { codigo: &#34;ESP&#34;, nome: &#34;Espanha&#34;, sigla: &#34;ES&#34; },
-  { codigo: &#34;PRT&#34;, nome: &#34;Portugal&#34;, sigla: &#34;PT&#34; },
-  { codigo: &#34;FRA&#34;, nome: &#34;França&#34;, sigla: &#34;FR&#34; },
-  { codigo: &#34;ITA&#34;, nome: &#34;Itália&#34;, sigla: &#34;IT&#34; },
-  { codigo: &#34;GBR&#34;, nome: &#34;Reino Unido&#34;, sigla: &#34;GB&#34; },
-  { codigo: &#34;JPN&#34;, nome: &#34;Japão&#34;, sigla: &#34;JP&#34; },
-  { codigo: &#34;CHN&#34;, nome: &#34;China&#34;, sigla: &#34;CN&#34; },
-  { codigo: &#34;AUS&#34;, nome: &#34;Austrália&#34;, sigla: &#34;AU&#34; },
-];
-</code></pre>
-<h2 is-upgraded>Trecho 3: adicionando as linhas do dataset</h2>
-<p>Cole este bloco antes do <code>return dataset;</code>:</p>
-<pre><code language="language-javascript" class="language-javascript">// Adiciona cada país como uma linha no dataset
-for (var i = 0; i &lt; paises.length; i++) {
-  var pais = paises[i];
-  dataset.addRow([pais.codigo, pais.nome, pais.sigla]);
-}
-
-console.log(&#34;Dataset de países criado com sucesso. Total de países: &#34; + paises.length);
-console.log(&#34;Exemplo de país: &#34; + JSON.stringify(paises[0]));
-</code></pre>
-<aside class="special"><p><code>createDataset()</code> segue o contrato esperado pelo runtime do Fluig: uma função que devolve um objeto <code>dataset</code> construído via <code>DatasetBuilder</code>. É essa mesma função que os testes do próximo passo vão chamar diretamente.</p>
-</aside>
-
-
-      </google-codelab-step>
-    
-      <google-codelab-step label="Testes unitários do dataset" duration="8">
-        <p>Como o <code>DatasetBuilder</code>/<code>DatasetFieldType</code> só existem dentro do servidor Fluig, para testar em Node.js criamos <strong>mocks</strong> dessas globais e carregamos o script de dataset em um sandbox isolado (<code>node:vm</code>), sem precisar de um servidor Fluig real.</p>
-<aside class="special"><p> Os arquivos auxiliares <code>tests/helpers/fluig-mocks.js</code> e <code>tests/helpers/load-dataset-script.js</code> já estarão prontos no projeto base. Na aula, o foco será completar apenas o teste principal do dataset.</p>
-</aside>
-<h2 is-upgraded>Teste do dataset de países</h2>
-<p>Abra o arquivo <code>tests/datasets/ds-viagens-paises.test.js</code> e cole os trechos abaixo nos testes correspondentes.</p>
-<h2 is-upgraded>Trecho 1: colunas esperadas</h2>
-<p>Cole este conteúdo dentro do teste <code>define as colunas codigo, nome e sigla como STRING</code>:</p>
-<pre><code language="language-javascript" class="language-javascript">assert.deepEqual(
-  columns.map((column) =&gt; column.name),
-  [&#34;codigo&#34;, &#34;nome&#34;, &#34;sigla&#34;]
-);
-assert.equal(
-  columns.every((column) =&gt; column.type === &#34;STRING&#34;),
-  true
-);
-</code></pre>
-<h2 is-upgraded>Trecho 2: quantidade de países</h2>
-<p>Cole este trecho dentro do teste <code>retorna 20 países</code>:</p>
-<pre><code language="language-javascript" class="language-javascript">assert.equal(rows.length, 20);
-</code></pre>
-<h2 is-upgraded>Trecho 3: cada linha do dataset</h2>
-<p>Cole este trecho dentro do teste <code>cada linha possui codigo, nome e sigla preenchidos</code>:</p>
-<pre><code language="language-javascript" class="language-javascript">for (const row of rows) {
-  assert.equal(row.length, 3);
-  for (const value of row) {
-    assert.equal(typeof value, &#34;string&#34;);
-    assert.notEqual(value.trim(), &#34;&#34;);
-  }
-}
-</code></pre>
-<h2 is-upgraded>Trecho 4: dados do Brasil</h2>
-<p>Cole este trecho dentro do teste <code>inclui o Brasil com os dados corretos</code>:</p>
-<pre><code language="language-javascript" class="language-javascript">const brasil = rows.find((row) =&gt; row[0] === &#34;BRA&#34;);
-assert.deepEqual(Array.from(brasil), [&#34;BRA&#34;, &#34;Brasil&#34;, &#34;BR&#34;]);
-</code></pre>
-<h2 is-upgraded>Trecho 5: códigos sem duplicidade</h2>
-<p>Cole este trecho dentro do teste <code>não possui códigos de país duplicados</code>:</p>
-<pre><code language="language-javascript" class="language-javascript">const codigos = rows.map((row) =&gt; row[0]);
-assert.equal(new Set(codigos).size, codigos.length);
-</code></pre>
-<h2 is-upgraded>Rode os testes localmente</h2>
+<p>Com isso, basta rodar:</p>
 <pre><code language="language-bash" class="language-bash">npm test
 </code></pre>
-<p>Você deve ver 5 sub-testes passando (colunas, quantidade de linhas, campos preenchidos, dados do Brasil e ausência de duplicados).</p>
-<aside class="warning"><p> Nunca crie arquivos de teste dentro de <code>datasets/</code>. O deploy publica <strong>todo </strong><strong><code>.js</code></strong> encontrado nessa pasta (veja <code>resources.dataset</code> no <code>fluig.json</code>), então um teste ali seria publicado como se fosse um dataset.</p>
-</aside>
 
 
       </google-codelab-step>
     
-      <google-codelab-step label="Pipeline de testes contínuos (fluig-tests.yml)" duration="5">
-        <p>Esse workflow roda os testes automaticamente em pull requests e em pushes para qualquer branch relevante, inclusive a <code>main</code>. Assim, o deploy automático pode ouvir a conclusão desse workflow e só publicar recursos quando os testes terminarem com sucesso.</p>
-<p>Abra o arquivo <code>.github/workflows/fluig-tests.yml</code> e complete os pontos abaixo.</p>
-<h2 is-upgraded>Trecho 1: caminhos monitorados no <code>push</code></h2>
-<p>Cole este bloco dentro de <code>on.push.paths</code>:</p>
-<pre><code language="language-yaml" class="language-yaml">- &#34;datasets/**&#34;
-- &#34;tests/**&#34;
-- &#34;fluig.json&#34;
-- &#34;.github/scripts/**&#34;
-- &#34;.github/workflows/**&#34;
-- &#34;package.json&#34;
+      <google-codelab-step label="fluig.json: configuracao minima do projeto" duration="3">
+        <p>No modelo atual, o <code>fluig.json</code> guarda apenas o essencial para o script de deploy:</p>
+<pre><code language="language-json" class="language-json">{
+  &#34;name&#34;: &#34;fluig-viagens-app&#34;,
+  &#34;cli&#34;: {
+    &#34;standaloneDir&#34;: &#34;.tools/fluig-studio-cli-v0.1.0/standalone&#34;,
+    &#34;serverName&#34;: &#34;fluig-ci&#34;
+  }
+}
 </code></pre>
-<h2 is-upgraded>Trecho 2: caminhos monitorados no <code>pull_request</code></h2>
-<p>Cole o mesmo bloco dentro de <code>on.pull_request.paths</code>:</p>
-<pre><code language="language-yaml" class="language-yaml">- &#34;datasets/**&#34;
-- &#34;tests/**&#34;
-- &#34;fluig.json&#34;
-- &#34;.github/scripts/**&#34;
-- &#34;.github/workflows/**&#34;
-- &#34;package.json&#34;
-</code></pre>
-<h2 is-upgraded>Trecho 3: comando do step de testes</h2>
-<p>Cole este comando no step <code>Run dataset unit tests</code>:</p>
-<pre><code language="language-yaml" class="language-yaml">run: npm test
-</code></pre>
-<aside class="special"><p> Repare nos filtros <code>paths</code>: o workflow só dispara quando arquivos relevantes mudam (<code>datasets/**</code>, <code>tests/**</code>, <code>fluig.json</code>, scripts e workflows), evitando execuções desnecessárias em commits que não afetam o código testado.</p>
-</aside>
-
-
-      </google-codelab-step>
-    
-      <google-codelab-step label="Script principal do deploy" duration="6">
-        <p>Este é o pipeline mais importante do projeto: ele prepara o CLI nos bastidores, autentica em um servidor Fluig e publica os recursos (datasets, por enquanto). Para a aula, vamos começar pelo script principal que orquestra o deploy.</p>
-<h2 is-upgraded>1. Arquivos auxiliares já preparados</h2>
-<p>No projeto base, estes arquivos já estarão completos:</p>
-<ul>
-<li><code>.github/scripts/fluig-deploy-config.mjs</code></li>
-<li><code>.github/scripts/fluig-deploy-resources.mjs</code></li>
-<li><code>.github/scripts/fluig-deploy-cli.mjs</code></li>
-<li><code>.github/scripts/fluig-deploy-utils.mjs</code></li>
-</ul>
-<p>Assim a turma consegue focar na história principal do deploy, sem se perder nos detalhes de apoio.</p>
-<h2 is-upgraded>2. Complete o script principal do deploy</h2>
-<p>Abra o arquivo <code>.github/scripts/fluig-resource-deploy.mjs</code> e cole os trechos abaixo nos pontos indicados pela estrutura base.</p>
-<h2 is-upgraded>Trecho 1: validação e leitura da configuração</h2>
-<p>Cole este bloco logo depois de <code>const dryRunEnabled = isDryRunEnabled();</code>:</p>
-<pre><code language="language-javascript" class="language-javascript">ensureRequiredDeployEnvironment({ dryRunEnabled });
-
-const resourceType = getSelectedResourceType({ fluigProjectConfig });
-const resourceSettings = getResourceSettings({
-  fluigProjectConfig,
-  resourceType,
-});
-const cliBinaryPath = resolveFluigCliBinaryPath({
-  workspaceRootDir,
-  fluigProjectConfig,
-});
-const deployCommandTemplate = resolveDeployCommandTemplate({
-  fluigProjectConfig,
-});
-const resourceFiles = await listResourceFilesForDeploy({
-  workspaceRootDir,
-  resourceSettings,
-});
-</code></pre>
-<h2 is-upgraded>Trecho 2: autenticação do CLI</h2>
-<p>Cole este bloco depois de <code>printDeploySummary(...)</code>:</p>
-<pre><code language="language-javascript" class="language-javascript">await authenticateFluigCli({
-  cliBinaryPath,
-  fluigServerConnection,
-  dryRunEnabled,
-  workingDirectory: workspaceRootDir,
-});
-</code></pre>
-<h2 is-upgraded>Trecho 3: montagem do comando de deploy</h2>
-<p>Cole este bloco dentro do <code>for (const resourcePath of resourceFiles)</code>:</p>
-<pre><code language="language-javascript" class="language-javascript">const deployCommand = createResourceDeployCommand({
-  cliBinaryPath,
-  deployCommandTemplate,
-  resourcePath,
-  resourceType,
-  workspaceRootDir,
-  cliServerName: fluigServerConnection.serverName,
-});
-</code></pre>
-
-
-      </google-codelab-step>
-    
-      <google-codelab-step label="Pipeline de deploy contínuo (fluig-deploy.yml)" duration="6">
-        <p>Agora que o script principal já está pronto, o próximo passo é montar o workflow de deploy no mesmo estilo que fizemos no workflow de testes.</p>
-<h2 is-upgraded>Complete o workflow que orquestra o deploy</h2>
-<p>Abra o arquivo <code>.github/workflows/fluig-deploy.yml</code> e complete os blocos abaixo.</p>
-<h2 is-upgraded>Trecho 1: workflow observado pelo <code>workflow_run</code></h2>
-<p>Cole este bloco dentro de <code>on.workflow_run</code>:</p>
-<pre><code language="language-yaml" class="language-yaml">workflows:
-  - Tests
-types:
-  - completed
-</code></pre>
-<h2 is-upgraded>Trecho 2: condição do job <code>deploy</code></h2>
-<p>Cole esta condição na chave <code>if</code> do job:</p>
-<pre><code language="language-yaml" class="language-yaml">if: &gt;
-  github.event_name == &#39;workflow_dispatch&#39; ||
-  (
-    github.event_name == &#39;workflow_run&#39; &amp;&amp;
-    github.event.workflow_run.conclusion == &#39;success&#39; &amp;&amp;
-    github.event.workflow_run.head_branch == &#39;main&#39;
-  )
-</code></pre>
-<h2 is-upgraded>Trecho 3: checkout da referência correta</h2>
-<p>Cole este bloco dentro do step <code>Checkout</code>:</p>
-<pre><code language="language-yaml" class="language-yaml">with:
-  ref: $&#123;&#123; github.event_name == &#39;workflow_run&#39; &amp;&amp; github.event.workflow_run.head_sha || github.sha }}
-</code></pre>
-<h2 is-upgraded>Trecho 4: comando de teste no disparo manual</h2>
-<p>Cole este bloco no step <code>Run dataset unit tests</code>:</p>
-<pre><code language="language-yaml" class="language-yaml">if: github.event_name == &#39;workflow_dispatch&#39;
-run: npm test
-</code></pre>
-<h2 is-upgraded>Trecho 5: preparação do CLI standalone</h2>
-<p>Cole este comando no step <code>standalone</code>:</p>
-<pre><code language="language-yaml" class="language-yaml">run: bash .github/scripts/setup-standalone-cli.sh
-</code></pre>
-<h2 is-upgraded>Trecho 6: execução do deploy</h2>
-<p>Cole este comando no step <code>Execute Fluig deploy</code>:</p>
-<pre><code language="language-yaml" class="language-yaml">run: node .github/scripts/fluig-resource-deploy.mjs
-</code></pre>
-<aside class="special"><p> O fluxo automático ficou mais simples de explicar em aula: <code>Tests</code> valida primeiro e <code>Fluig Deploy</code> só roda depois, via <code>workflow_run</code>. No modo manual, o próprio workflow de deploy executa <code>npm test</code> antes de publicar. A preparação do CLI fica escondida dentro do workflow e não precisa virar tópico da explicação.</p>
-</aside>
-
-
-      </google-codelab-step>
-    
-      <google-codelab-step label="Secrets, Variables e primeira execução" duration="5">
-        <h2 is-upgraded>Confira o repositório no GitHub</h2>
-<p>Neste treinamento, o repositório base já estará pronto no GitHub. Antes de começar a execução, confirme apenas se:</p>
-<ol type="1">
-<li>o repositório correto foi clonado;</li>
-<li>a branch usada na aula é a <code>main</code>;</li>
-<li>a aba <strong>Actions</strong> está habilitada no projeto.</li>
-</ol>
-<h2 is-upgraded>Configure os Secrets (dados sensíveis)</h2>
-<p>No GitHub, acesse <strong>Settings › Secrets and variables › Actions › Secrets</strong> e crie:</p>
+<h2 is-upgraded>O que cada campo faz</h2>
 <table>
-<tr><td colspan="1" rowspan="1"><p>Secret</p>
-</td><td colspan="1" rowspan="1"><p>Descrição</p>
+<tr><td colspan="1" rowspan="1"><p>Chave</p>
+</td><td colspan="1" rowspan="1"><p>Funcao</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>name</code></p>
+</td><td colspan="1" rowspan="1"><p>Nome logico do projeto</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>cli.standaloneDir</code></p>
+</td><td colspan="1" rowspan="1"><p>Pasta local onde os binarios standalone ficam armazenados no repositório</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>cli.serverName</code></p>
+</td><td colspan="1" rowspan="1"><p>Nome base usado pelo script para criar o servidor no Fluig CLI</p>
+</td></tr>
+</table>
+<aside class="special"><p> O deploy nao baixa binario em runtime. O pipeline usa uma imagem Docker pronta, o que deixa a execucao mais previsivel e mais simples de explicar em sala.</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Dataset de paises" duration="6">
+        <p>Abra <code>datasets/ds-viagens-paises.js</code>. O dataset atual ja esta pronto e usa o contrato padrao do Fluig: a funcao <code>createDataset()</code> devolve um objeto montado com <code>DatasetBuilder</code>.</p>
+<pre><code language="language-javascript" class="language-javascript">function createDataset() {
+  var ds = DatasetBuilder.newDataset();
+  var rows = [
+    [&#34;BRA&#34;, &#34;Brasil&#34;, &#34;BR&#34;],
+    [&#34;USA&#34;, &#34;Estados Unidos&#34;, &#34;US&#34;],
+    [&#34;ARG&#34;, &#34;Argentina&#34;, &#34;AR&#34;],
+    [&#34;CHL&#34;, &#34;Chile&#34;, &#34;CL&#34;],
+    [&#34;URY&#34;, &#34;Uruguai&#34;, &#34;UY&#34;],
+    [&#34;PRY&#34;, &#34;Paraguai&#34;, &#34;PY&#34;],
+    [&#34;BOL&#34;, &#34;Bolívia&#34;, &#34;BO&#34;],
+    [&#34;PER&#34;, &#34;Peru&#34;, &#34;PE&#34;],
+    [&#34;COL&#34;, &#34;Colômbia&#34;, &#34;CO&#34;],
+    [&#34;VEN&#34;, &#34;Venezuela&#34;, &#34;VE&#34;],
+    [&#34;MEX&#34;, &#34;México&#34;, &#34;MX&#34;],
+    [&#34;DEU&#34;, &#34;Alemanha&#34;, &#34;DE&#34;],
+    [&#34;ESP&#34;, &#34;Espanha&#34;, &#34;ES&#34;],
+    [&#34;PRT&#34;, &#34;Portugal&#34;, &#34;PT&#34;],
+    [&#34;FRA&#34;, &#34;França&#34;, &#34;FR&#34;],
+    [&#34;ITA&#34;, &#34;Itália&#34;, &#34;IT&#34;],
+    [&#34;GBR&#34;, &#34;Reino Unido&#34;, &#34;GB&#34;],
+    [&#34;JPN&#34;, &#34;Japão&#34;, &#34;JP&#34;],
+    [&#34;CHN&#34;, &#34;China&#34;, &#34;CN&#34;],
+    [&#34;AUS&#34;, &#34;Austrália&#34;, &#34;AU&#34;],
+  ];
+
+  ds.addColumn(&#34;codigo&#34;, DatasetFieldType.STRING);
+  ds.addColumn(&#34;nome&#34;, DatasetFieldType.STRING);
+  ds.addColumn(&#34;sigla&#34;, DatasetFieldType.STRING);
+
+  for (var i = 0; i &lt; rows.length; i++) {
+    ds.addRow(rows[i]);
+  }
+
+  return ds;
+}
+</code></pre>
+<h2 is-upgraded>O que observar</h2>
+<ul>
+<li>O dataset tem 3 colunas: <code>codigo</code>, <code>nome</code> e <code>sigla</code>.</li>
+<li>Cada linha e um array simples de strings.</li>
+<li>O script nao depende de <code>require</code>, porque no Fluig as globais ja existem no runtime.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Teste de contrato" duration="7">
+        <p>Em vez de um arquivo de teste por dataset, o projeto usa um unico teste de contrato:</p>
+<p><code>tests/datasets.contract.test.js</code></p>
+<p>Ele faz quatro coisas:</p>
+<ol type="1">
+<li>varre a pasta <code>datasets/</code>;</li>
+<li>executa cada script dentro de um sandbox;</li>
+<li>injeta mocks de <code>DatasetBuilder</code> e <code>DatasetFieldType</code>;</li>
+<li>valida um contrato minimo para todos os datasets.</li>
+</ol>
+<p>Trecho principal:</p>
+<pre><code language="language-javascript" class="language-javascript">const dataset = loadDataset(relativePath);
+const columns = dataset.getColumns();
+const rows = dataset.getRows();
+
+assert.ok(Array.isArray(columns));
+assert.ok(Array.isArray(rows));
+assert.notEqual(columns.length, 0);
+
+const columnNames = columns.map((column) =&gt; column.name);
+assert.equal(new Set(columnNames).size, columnNames.length);
+
+for (const row of rows) {
+  assert.equal(row.length, columns.length);
+}
+</code></pre>
+<p>Para o dataset <code>ds-viagens-paises.js</code>, o teste ainda faz validacoes especificas:</p>
+<pre><code language="language-javascript" class="language-javascript">if (relativePath === &#34;datasets/ds-viagens-paises.js&#34;) {
+  assert.deepEqual(columnNames, [&#34;codigo&#34;, &#34;nome&#34;, &#34;sigla&#34;]);
+  assert.equal(rows.length, 20);
+  assert.deepEqual(Array.from(rows.find((row) =&gt; row[0] === &#34;BRA&#34;)), [
+    &#34;BRA&#34;,
+    &#34;Brasil&#34;,
+    &#34;BR&#34;,
+  ]);
+}
+</code></pre>
+<h2 is-upgraded>Execute localmente</h2>
+<pre><code language="language-bash" class="language-bash">npm test
+</code></pre>
+<aside class="special"><p> Esse formato escala bem para exemplos didaticos: quando um novo dataset entra no projeto, ele ja passa a ser validado pelo mesmo teste de contrato.</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Workflow unico de CI/CD" duration="8">
+        <p>O projeto agora usa apenas um workflow:</p>
+<p><code>/.github/workflows/ci.yml</code></p>
+<p>Ele responde a:</p>
+<ul>
+<li><code>push</code></li>
+<li><code>pull_request</code></li>
+<li><code>workflow_dispatch</code></li>
+</ul>
+<p>Os caminhos monitorados sao:</p>
+<pre><code language="language-yaml" class="language-yaml">paths:
+  - &#34;datasets/**&#34;
+  - &#34;tests/**&#34;
+  - &#34;.github/**&#34;
+  - &#34;fluig.json&#34;
+  - &#34;package.json&#34;
+</code></pre>
+<h2 is-upgraded>Job de teste</h2>
+<p>O primeiro job e o <code>test</code>:</p>
+<pre><code language="language-yaml" class="language-yaml">test:
+  runs-on: ubuntu-latest
+  container:
+    image: node:22-bookworm-slim
+
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Rodar testes
+      run: npm test
+</code></pre>
+<p>Esse job sempre vem antes do deploy.</p>
+<h2 is-upgraded>Job de deploy</h2>
+<p>O segundo job e o <code>deploy</code>, dependente do <code>test</code>:</p>
+<pre><code language="language-yaml" class="language-yaml">deploy:
+  needs: test
+  runs-on: ubuntu-latest
+  if: &gt;
+    needs.test.result == &#39;success&#39; &amp;&amp;
+    (
+      github.event_name == &#39;workflow_dispatch&#39; ||
+      (github.event_name == &#39;push&#39; &amp;&amp; github.ref == &#39;refs/heads/main&#39;)
+    )
+</code></pre>
+<p>Ou seja:</p>
+<ul>
+<li>em <code>pull_request</code>, o workflow testa, mas nao faz deploy;</li>
+<li>em <code>push</code> na <code>main</code>, ele testa e depois publica;</li>
+<li>em <code>workflow_dispatch</code>, o deploy pode ser disparado manualmente.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Detectando apenas os datasets alterados" duration="5">
+        <p>O step <code>Descobrir datasets alterados</code> decide o que sera publicado.</p>
+<p>Quando a execucao for manual, ele usa a entrada <code>dataset_paths</code>. Quando a execucao vier de <code>push</code>, ele calcula o diff entre commits:</p>
+<pre><code language="language-bash" class="language-bash">BASE=&#34;$&#123;&#123; github.event.before }}&#34;
+if [[ -z &#34;$BASE&#34; || &#34;$BASE&#34; == &#34;0000000000000000000000000000000000000000&#34; ]]; then
+  BASE=&#34;$(git rev-list --max-parents=0 HEAD | tail -n 1)&#34;
+fi
+
+DATASETS=&#34;$(git diff --name-only &#34;$BASE&#34; &#34;${GITHUB_SHA}&#34; | grep &#39;^datasets/.*\.js$&#39; || true)&#34;
+</code></pre>
+<p>Depois, a lista e enviada para <code>GITHUB_OUTPUT</code> como <code>steps.datasets.outputs.paths</code>.</p>
+<p>Isso permite:</p>
+<ul>
+<li>fazer deploy apenas do que mudou;</li>
+<li>ou informar manualmente uma lista de datasets, um por linha.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Imagem Docker do Fluig CLI" duration="4">
+        <p>O deploy nao instala o Fluig CLI passo a passo no runner. Em vez disso, ele usa a imagem:</p>
+<pre><code language="language-text" class="language-text">ghcr.io/cardevisi/fluig-cli:0.1.0
+</code></pre>
+<p>O Dockerfile local que gera essa imagem fica em:</p>
+<p><code>/.github/docker/fluig-cli/Dockerfile</code></p>
+<p>Trecho principal:</p>
+<pre><code language="language-dockerfile" class="language-dockerfile">FROM node:22-bookworm-slim
+
+ARG TARGETARCH
+
+RUN case &#34;${TARGETARCH}&#34; in \
+    &#34;amd64&#34;) cp /tmp/fluig-standalone/fluig-cli-linux-x64 /usr/local/bin/fluig ;; \
+    *) echo &#34;Arquitetura suportada apenas para esta imagem: amd64. Recebido: ${TARGETARCH}&#34; &amp;&amp; exit 1 ;; \
+  esac
+</code></pre>
+<h2 is-upgraded>Por que isso importa</h2>
+<ul>
+<li>o runner nao baixa binarios em tempo de execucao;</li>
+<li>o deploy fica padronizado entre ambientes;</li>
+<li>a compatibilidade fica explicita: a imagem publicada atende apenas <code>amd64</code>.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Script de deploy dentro do container" duration="7">
+        <p>O container inicia executando:</p>
+<pre><code language="language-text" class="language-text">node .github/scripts/fluig-resource-deploy.mjs
+</code></pre>
+<p>Esse script:</p>
+<ol type="1">
+<li>le o <code>fluig.json</code>;</li>
+<li>resolve a lista de datasets;</li>
+<li>monta a conexao com base em <code>FLUIG_BASE_URL</code>, <code>FLUIG_USERNAME</code> e <code>FLUIG_PASSWORD</code>;</li>
+<li>cria e autentica o servidor no CLI;</li>
+<li>executa <code>export resource</code> para cada dataset selecionado.</li>
+</ol>
+<p>Trecho do loop de deploy:</p>
+<pre><code language="language-javascript" class="language-javascript">for (const dataset of datasets) {
+  const resourceName = path.basename(dataset, &#34;.js&#34;);
+  await runCli([
+    &#34;export&#34;,
+    &#34;resource&#34;,
+    &#34;--projectPath&#34;,
+    workspace,
+    &#34;--resourceType&#34;,
+    &#34;dataset&#34;,
+    &#34;--resourceName&#34;,
+    resourceName,
+    &#34;--serverName&#34;,
+    connection.serverName,
+  ]);
+}
+</code></pre>
+<aside class="special"><p> O nome do recurso enviado ao CLI preserva o nome real do arquivo, incluindo hifens. Isso evita erros de localizacao do dataset no deploy.</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Secrets e variaveis" duration="4">
+        <p>Para o pipeline funcionar no GitHub, configure em <strong>Settings &gt; Secrets and variables &gt; Actions</strong>:</p>
+<h2 is-upgraded>Secrets obrigatorios</h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>Nome</p>
+</td><td colspan="1" rowspan="1"><p>Uso</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>GHCR_TOKEN</code></p>
+</td><td colspan="1" rowspan="1"><p>Token para autenticar no GHCR e baixar a imagem do CLI</p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p><code>FLUIG_BASE_URL</code></p>
-</td><td colspan="1" rowspan="1"><p>URL base do servidor Fluig (ex.: <code>https://fluig.empresa.com</code>)</p>
+</td><td colspan="1" rowspan="1"><p>URL base do servidor Fluig</p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p><code>FLUIG_USERNAME</code></p>
-</td><td colspan="1" rowspan="1"><p>Usuário de autenticação no Fluig</p>
+</td><td colspan="1" rowspan="1"><p>Usuario do Fluig</p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p><code>FLUIG_PASSWORD</code></p>
-</td><td colspan="1" rowspan="1"><p>Senha de autenticação no Fluig</p>
+</td><td colspan="1" rowspan="1"><p>Senha do Fluig</p>
 </td></tr>
 </table>
-<aside class="warning"><p> Nunca coloque essas credenciais direto no <code>fluig.json</code> ou em qualquer arquivo versionado. Secrets do GitHub Actions são criptografados e nunca aparecem nos logs.</p>
-</aside>
-<h2 is-upgraded>Configure as Variables (dados não sensíveis, opcionais)</h2>
-<p>Em <strong>Settings › Secrets and variables › Actions › Variables</strong>, você pode sobrescrever o que está no <code>fluig.json</code>:</p>
+<h2 is-upgraded>Variavel opcional</h2>
 <table>
-<tr><td colspan="1" rowspan="1"><p>Variável</p>
-</td><td colspan="1" rowspan="1"><p>Descrição</p>
+<tr><td colspan="1" rowspan="1"><p>Nome</p>
+</td><td colspan="1" rowspan="1"><p>Uso</p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p><code>FLUIG_SERVER_NAME</code></p>
-</td><td colspan="1" rowspan="1"><p>Nome lógico do servidor no CLI</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>FLUIG_CLI_DOWNLOAD_URL</code></p>
-</td><td colspan="1" rowspan="1"><p>URL de download do binário do Fluig CLI</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>FLUIG_CLI_SHA256</code></p>
-</td><td colspan="1" rowspan="1"><p>Checksum SHA-256 esperado do binário</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p><code>FLUIG_DEPLOY_COMMAND_TEMPLATE</code></p>
-</td><td colspan="1" rowspan="1"><p>Template do comando de deploy</p>
+</td><td colspan="1" rowspan="1"><p>Sobrescreve o nome base do servidor criado no CLI</p>
 </td></tr>
 </table>
-<h2 is-upgraded>Rode o pipeline em modo <code>dry_run</code></h2>
-<ol type="1">
-<li>Acesse a aba <strong>Actions</strong> do repositório.</li>
-<li>Selecione o workflow <strong>Fluig Deploy</strong> → <strong>Run workflow</strong>.</li>
-<li>Deixe <code>resource_type = dataset</code>, <code>resource_path</code> vazio e marque <code>dry_run = true</code>.</li>
-<li>Clique em <strong>Run workflow</strong> e acompanhe o log do job <code>deploy</code>.</li>
-</ol>
-<p>Você verá os comandos do Fluig CLI sendo exibidos (com a senha oculta como <code>***</code>), mas nada será executado de verdade — é a forma segura de validar toda a esteira sem precisar de um servidor Fluig real.</p>
-<aside class="special"><p> Se você tiver acesso a um servidor Fluig de testes, preencha os secrets com as credenciais reais, gere um binário do CLI, publique-o como release no GitHub, atualize <code>cli.downloadUrl</code> e <code>cli.sha256</code> no <code>fluig.json</code> e rode novamente com <code>dry_run = false</code> para publicar o dataset de verdade.</p>
-</aside>
 
 
       </google-codelab-step>
     
-      <google-codelab-step label="Parabéns e próximos passos" duration="3">
-        <p>Você completou os principais trechos do <strong>fluig-viagens-app</strong> e agora entende:</p>
+      <google-codelab-step label="Fluxo completo do pipeline" duration="3">
+        <p>Em resumo, a esteira atual faz:</p>
+<ol type="1">
+<li>checkout do codigo;</li>
+<li><code>npm test</code> no job <code>test</code>;</li>
+<li>descoberta dos datasets alterados;</li>
+<li>login no GHCR;</li>
+<li><code>docker pull ghcr.io/cardevisi/fluig-cli:0.1.0</code>;</li>
+<li><code>docker run</code> com as variaveis de ambiente do Fluig;</li>
+<li>deploy dos datasets selecionados.</li>
+</ol>
+<p>Esse fluxo vale tanto para execucao automatica na <code>main</code> quanto para disparo manual.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Parabens e proximos passos" duration="3">
+        <p>Voce concluiu a leitura da implementacao atual do projeto e ja sabe:</p>
 <ul>
-<li>Como um dataset Fluig é escrito e como testá-lo fora do servidor com <code>node:vm</code>.</li>
-<li>Como o <code>fluig.json</code> centraliza a configuração do CLI, dos recursos e do deploy.</li>
-<li>Como funciona um pipeline de testes (<code>fluig-tests.yml</code>) que protege a branch <code>main</code>.</li>
-<li>Como funciona um pipeline de deploy (<code>fluig-deploy.yml</code>) que autentica no servidor e publica recursos automaticamente.</li>
+<li>como o dataset esta estruturado;</li>
+<li>como o teste de contrato protege todos os datasets;</li>
+<li>como o <code>ci.yml</code> concentra teste e deploy;</li>
+<li>como o Fluig CLI foi encapsulado em Docker para simplificar a pipeline.</li>
 </ul>
 <h2 is-upgraded>Para continuar praticando</h2>
 <ul>
-<li>Adicione um novo dataset em <code>datasets/</code> e o respectivo teste em <code>tests/datasets/</code>.</li>
-<li>Experimente rodar o workflow com <code>resource_path</code> apontando para um único arquivo.</li>
-<li>Explore os diretórios <code>forms/</code>, <code>wcm/widget/</code> e <code>workflow/scripts/</code> para expandir o projeto além dos datasets.</li>
+<li>Adicione um novo dataset em <code>datasets/</code> e rode <code>npm test</code>.</li>
+<li>Dispare o workflow manual com <code>dataset_paths</code> preenchido.</li>
+<li>Gere uma nova imagem do CLI quando o binario mudar e atualize a tag usada no workflow.</li>
 </ul>
-<h2 is-upgraded>Referências</h2>
+<h2 is-upgraded>Referencias</h2>
 <ul>
-<li>Repositório de referência: <a href="https://github.com/cardevisi/fluig-viagens-app" target="_blank">https://github.com/cardevisi/fluig-viagens-app</a></li>
-<li>Material do codelab: <a href="docs/codelab-fluig-viagens-app.md" target="_blank">docs/codelab-fluig-viagens-app.md</a></li>
-<li><a href="../README.md" target="_blank">README.md</a> do projeto original, com detalhes adicionais da implementação.</li>
+<li>Repositorio: <a href="https://github.com/cardevisi/fluig-viagens-app-min" target="_blank">https://github.com/cardevisi/fluig-viagens-app-min</a></li>
+<li><a href="../README.md" target="_blank">README.md</a></li>
+<li><a href="../.github/workflows/ci.yml" target="_blank">ci.yml</a></li>
+<li><a href="../.github/scripts/fluig-resource-deploy.mjs" target="_blank">fluig-resource-deploy.mjs</a></li>
 </ul>
 
 
@@ -603,74 +485,6 @@ run: npm test
   <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
   <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
   <script src="//support.google.com/inapp/api.js"></script>
-  <script>
-    (function () {
-      function getCopyButtonIcon(iconName) {
-        if (iconName === "done") {
-          return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>';
-        }
-
-        if (iconName === "error") {
-          return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>';
-        }
-
-        return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"></path></svg>';
-      }
-
-      function enhanceCodeBlocks() {
-        document.querySelectorAll("google-codelab-step pre").forEach(function (pre) {
-          if (pre.dataset.copyEnhanced === "true") {
-            return;
-          }
-
-          var code = pre.querySelector("code");
-          if (!code) {
-            return;
-          }
-
-          pre.dataset.copyEnhanced = "true";
-          pre.classList.add("copyable-code");
-
-          var button = document.createElement("button");
-          button.type = "button";
-          button.className = "copy-code-button";
-          button.setAttribute("aria-label", "Copiar amostra de código");
-          button.innerHTML = getCopyButtonIcon("copy");
-
-          button.addEventListener("click", async function () {
-            try {
-              await navigator.clipboard.writeText(code.textContent || "");
-              button.setAttribute("aria-label", "Código copiado");
-              button.innerHTML = getCopyButtonIcon("done");
-            } catch (error) {
-              button.setAttribute("aria-label", "Falha ao copiar");
-              button.innerHTML = getCopyButtonIcon("error");
-            }
-
-            window.setTimeout(function () {
-              button.setAttribute("aria-label", "Copiar amostra de código");
-              button.innerHTML = getCopyButtonIcon("copy");
-            }, 1500);
-          });
-
-          pre.appendChild(button);
-        });
-      }
-
-      document.addEventListener("DOMContentLoaded", function () {
-        enhanceCodeBlocks();
-
-        var observer = new MutationObserver(function () {
-          enhanceCodeBlocks();
-        });
-
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true
-        });
-      });
-    })();
-  </script>
 
 </body>
 </html>
