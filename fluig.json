@@ -2,7 +2,7 @@
   "name": "fluig-viagens-app",
   "description": "Projeto de viagens com dataset e teste de contrato",
   "version": "1.0.0",
-  "author": "Carlos Oliveira",
+  "author": "TOTVS",
   "license": "UNLICENSED",
   "cli": {
     "serverName": "fluig-ci"

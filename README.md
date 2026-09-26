@@ -1,86 +1,160 @@
 # fluig-viagens-app-min
 
-Exemplo mínimo para:
+Projeto-base usado no codelab para demonstrar um fluxo simples de desenvolvimento com Fluig,
+teste automatizado de dataset e pipeline de CI/CD no GitHub Actions.
 
-- testar datasets Fluig com `node --test`
-- fazer deploy só dos datasets alterados
-- rodar o deploy com uma imagem Docker pronta no GHCR
+## Para quem este projeto foi montado
 
-## O que foi simplificado
+Este repositório foi organizado pensando no aluno que vai acompanhar o codelab e entender, passo a
+passo, como:
 
-- um workflow só: [`.github/workflows/ci.yml`](file:///Users/carlos.oliveira/TOTVS/fluig-viagens-app-min/.github/workflows/ci.yml)
-- um script só de deploy: [`.github/scripts/fluig-resource-deploy.mjs`](file:///Users/carlos.oliveira/TOTVS/fluig-viagens-app-min/.github/scripts/fluig-resource-deploy.mjs)
-- um teste de contrato só: [`tests/datasets.contract.test.js`](file:///Users/carlos.oliveira/TOTVS/fluig-viagens-app-min/tests/datasets.contract.test.js)
-- uma imagem Docker publicada no GHCR: `ghcr.io/cardevisi/fluig-cli:0.1.0`
-- um Dockerfile local para gerar essa imagem quando o CLI mudar: [`.github/docker/fluig-cli/Dockerfile`](file:///Users/carlos.oliveira/TOTVS/fluig-viagens-app-min/.github/docker/fluig-cli/Dockerfile)
+- criar ou evoluir um dataset Fluig;
+- validar o recurso com teste automatizado;
+- versionar o projeto no GitHub;
+- usar um workflow para testar e publicar alterações.
 
-## Testes
+## O que você encontra aqui
 
-Os testes seguem uma abordagem simples e atual para este caso: teste de contrato.
+- um dataset de exemplo em `datasets/`;
+- um teste automatizado em `tests/`;
+- um workflow de CI/CD em `.github/workflows/fluig-deploy.yml`;
+- um script de deploy em `.github/scripts/fluig-resource-deploy.mjs`;
+- um codelab em `docs/codelab-fluig-viagens-app.md`.
 
-Em vez de criar um teste manual para cada dataset, o arquivo `tests/datasets.contract.test.js`:
+## Estrutura atual do projeto
 
-- varre a pasta `datasets/`
-- executa cada script em sandbox
-- valida o contrato mínimo do dataset
-- aplica asserts específicos quando necessário
+```text
+fluig-viagens-app-min/
+├── datasets/
+│   └── ds-viagens-paises.js
+├── tests/
+│   └── datasets.contract.test.js
+├── .github/
+│   ├── scripts/
+│   │   └── fluig-resource-deploy.mjs
+│   └── workflows/
+│       └── fluig-deploy.yml
+├── docs/
+│   ├── assets/
+│   ├── build-codelab.mjs
+│   ├── codelab-fluig-viagens-app.md
+│   └── serve-codelab.mjs
+├── fluig.json
+├── package.json
+└── README.md
+```
 
-Rodar localmente:
+## Arquivos principais
+
+### `datasets/ds-viagens-paises.js`
+
+Dataset de exemplo usado ao longo da aula. Ele devolve uma lista fixa de países e serve como base
+para explicar a estrutura de um dataset Fluig.
+
+### `tests/datasets.contract.test.js`
+
+Teste automatizado que executa o dataset em sandbox e valida uma base reaproveitável de regras,
+como:
+
+- criação do dataset;
+- existência de colunas;
+- consistência entre colunas e linhas.
+
+Além disso, o arquivo também pode conter asserts específicos para datasets concretos.
+
+### `.github/workflows/fluig-deploy.yml`
+
+Workflow principal do projeto. Ele:
+
+1. roda os testes;
+2. identifica os datasets alterados;
+3. baixa a imagem do Fluig CLI no GHCR;
+4. executa o deploy apenas do que foi selecionado.
+
+### `.github/scripts/fluig-resource-deploy.mjs`
+
+Script executado dentro do container para autenticar no Fluig CLI e publicar os datasets.
+
+### `docs/codelab-fluig-viagens-app.md`
+
+Material-base do codelab. É esse arquivo que explica o projeto para o aluno e gera a versão HTML
+publicada em `docs/reconstruindo-fluig-viagens-app/`.
+
+## Como acompanhar o codelab localmente
+
+Instale as dependências do projeto:
+
+```bash
+npm install
+```
+
+Para abrir o codelab localmente:
+
+```bash
+npm run codelab
+```
+
+Se quiser apenas gerar os arquivos do codelab:
+
+```bash
+npm run codelab:build
+```
+
+## Como rodar os testes
+
+O projeto usa o runner nativo de testes do Node.js:
 
 ```bash
 npm test
 ```
 
-## Pipeline
+## Como funciona o pipeline
 
-Fluxo do workflow:
+O workflow responde a três tipos principais de execução:
 
-1. roda os testes
-2. se estiver em `main` e os testes passarem, descobre quais datasets mudaram
-3. faz login no GHCR e baixa a imagem pronta do Fluig CLI
-4. publica apenas os datasets alterados
+- `push`
+- `pull_request`
+- `workflow_dispatch`
 
-No `workflow_dispatch`, você pode informar manualmente uma lista de datasets, um por linha.
+Na prática:
 
-## Imagem do CLI
+- em `pull_request`, o projeto executa os testes;
+- em `push` para `main`, testa e pode fazer deploy;
+- em `workflow_dispatch`, permite disparo manual com lista opcional de datasets.
 
-O pipeline usa a imagem:
+## Deploy e imagem do CLI
+
+O deploy usa a imagem:
 
 ```text
 ghcr.io/cardevisi/fluig-cli:0.1.0
 ```
 
-Essa imagem já contém o Fluig CLI e é baixada no deploy.
+Essa abordagem simplifica a aula porque evita instalar o CLI manualmente em cada execução do
+workflow.
 
-Assim, o runner não precisa:
+## Configurações e secrets
 
-- baixar o CLI em step separado
-- buildar a imagem do CLI a cada execução
-- manter binários grandes dentro do repositório
+Para executar o deploy real no GitHub Actions, configure:
 
-## Secrets
+### Secrets obrigatórios
 
-Configure no GitHub Actions:
-
+- `GHCR_TOKEN`
 - `FLUIG_BASE_URL`
 - `FLUIG_USERNAME`
 - `FLUIG_PASSWORD`
 
-Opcional:
+### Variável opcional
 
 - `FLUIG_SERVER_NAME`
 
-## Estrutura essencial
+## Arquivo `fluig.json`
 
-```text
-datasets/
-  ds-viagens-paises.js
+O `fluig.json` concentra as informações principais do projeto Fluig. Neste repositório, ele guarda
+os metadados básicos e o nome-base usado pelo CLI durante o deploy.
 
-tests/
-  datasets.contract.test.js
+## Referências úteis
 
-.github/
-  docker/fluig-cli/Dockerfile
-  scripts/fluig-resource-deploy.mjs
-  workflows/ci.yml
-```
+- Codelab: `docs/codelab-fluig-viagens-app.md`
+- Workflow: `.github/workflows/fluig-deploy.yml`
+- Script de deploy: `.github/scripts/fluig-resource-deploy.mjs`

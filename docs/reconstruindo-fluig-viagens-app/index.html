@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <meta name="theme-color" content="#4F7DC9">
   <meta charset="UTF-8">
-  <title>Reconstruindo o fluig-viagens-app-min: dataset, teste de contrato e pipeline simplificado</title>
+  <title>Reconstruindo o fluig-viagens-app: dataset, teste de contrato e pipeline simplificado</title>
   <link rel="stylesheet" href="assets/fonts/roboto.css">
   <link rel="stylesheet" href="assets/fonts/material-icons.css">
   <link rel="stylesheet" href="assets/codelab-elements.css">
@@ -78,46 +78,24 @@
   <google-codelab codelab-gaid=""
                   codelab-ga4id=""
                   id="reconstruindo-fluig-viagens-app"
-                  title="Reconstruindo o fluig-viagens-app-min: dataset, teste de contrato e pipeline simplificado"
+                  title="Reconstruindo o fluig-viagens-app: dataset, teste de contrato e pipeline simplificado"
                   environment="web"
-                  feedback-link="https://github.com/cardevisi/fluig-viagens-app-min/issues">
+                  feedback-link="https://github.com/cardevisi/fluig-viagens-app/issues">
     
-      <google-codelab-step label="Visão geral" duration="3">
-        <p>Neste codelab, você vai reconstruir o projeto <strong>fluig-viagens-app-min</strong>, acompanhando um fluxo de desenvolvimento que se aproxima de times que precisam publicar com mais segurança e qualidade. Ao longo da aula, você vai entender como combinar implementação, testes automatizados e pipeline de CI/CD para criar uma camada de qualidade antes do envio de recursos para produção. Em vez de focar apenas no código do dataset, a proposta é mostrar o caminho completo: desenvolver, validar, automatizar e preparar a publicação em um servidor Fluig remoto com o apoio do GitHub Actions.</p>
-<p>Ao final, você terá um projeto que:</p>
-<ul>
-<li>publica apenas datasets alterados;</li>
-<li>valida o dataset com teste automatizado;</li>
-<li>usa uma imagem Docker pronta com o Fluig CLI no GHCR (GitHub Container Registry);</li>
-<li>executa deploy manual ou automático a partir do mesmo arquivo <code>fluig-deploy.yml</code>.</li>
-</ul>
-<aside class="special"><p> Este projeto foi reduzido ao essencial para que a aula seja mais objetiva e fácil de acompanhar. Ao mesmo tempo, a estrutura apresentada aqui pode servir como base para cenários mais próximos do dia a dia, com evoluções como workflows separados, múltiplos ambientes e estratégias de publicação para desenvolvimento, homologação e produção.</p>
-</aside>
-<h2 is-upgraded>Atividades deste laboratório</h2>
-<ul>
-<li>Clonar o repositório base.</li>
-<li>Ver rapidamente a extensão do VS Code usada no ecossistema Fluig.</li>
-<li>Ver o Fluig CLI em funcionamento com um overview dos principais comandos.</li>
-<li>Entender a estrutura mínima do projeto.</li>
-<li>Conferir o dataset <code>ds-viagens-paises.js</code>.</li>
-<li>Validar o teste de contrato com <code>npm test</code>.</li>
-<li>Ler o workflow <code>.github/workflows/fluig-deploy.yml</code>.</li>
-<li>Entender como o deploy roda dentro do container usando o Fluig CLI na imagem <code>ghcr.io/cardevisi/fluig-cli:0.1.0</code>.</li>
-</ul>
+      <google-codelab-step label="Introdução" duration="3">
+        <p>Neste codelab, você vai reconstruir o projeto <strong>fluig-viagens-app</strong>, acompanhando um fluxo de desenvolvimento que se aproxima de times que precisam publicar com mais segurança e qualidade. Ao longo da aula, você vai entender como <strong>combinar implementação, testes automatizados e pipeline de CI/CD</strong> para criar uma camada de qualidade antes do envio de recursos para produção. Em vez de focar apenas no código do dataset, a proposta é mostrar o caminho completo: <strong>desenvolver, validar, automatizar e preparar a publicação em um servidor Fluig remoto com o apoio do GitHub Actions.</strong></p>
 <h2 is-upgraded>O que você vai aprender</h2>
 <ul>
 <li>Como escrever um dataset Fluig simples.</li>
-<li>Como simular o ambiente do Fluig no Node.js para testar datasets localmente com <code>node:vm</code>.</li>
+<li>Como executar testes unitários localmente e a partir do pipeline CI/CD.</li>
 <li>Como detectar datasets alterados no GitHub Actions.</li>
-<li>Como encapsular o Fluig CLI em Docker para manter o pipeline limpo.</li>
+<li>Como um pipeline no Github Actions funciona.</li>
 <li>Como usar um workflow único para teste e deploy.</li>
+<li>Como encapsular o Fluig CLI em Docker para manter o pipeline limpo.</li>
+<li>Como utilizar o novo Fluig CLI para automatizar fluxos dentro do pipeline.</li>
 </ul>
 <h2 is-upgraded>O que você vai construir</h2>
-<pre><code language="language-text" class="language-text">fluig-viagens-app-min/
-├── datasets/
-│   └── ds-viagens-paises.js
-├── tests/
-│   └── datasets.contract.test.js
+<pre><code language="language-text" class="language-text">fluig-viagens-app-alunoNN/
 ├── .github/
 │   ├── docker/
 │   │   └── fluig-cli/
@@ -126,54 +104,163 @@
 │   │   └── fluig-resource-deploy.mjs
 │   └── workflows/
 │       └── fluig-deploy.yml
+├── datasets/
+│   └── ds-viagens-paises-alunoNN.js
+├── tests/
+│   └── datasets.test.js
 ├── docs/
-│   └── codelab-fluig-viagens-app.md
+│   ├── assets/
+│   ├── build-codelab.mjs
+│   ├── codelab-fluig-viagens-app.md
+│   └── proposta-pipeline.md
+├── events/
+├── forms/
+├── reports/
+│   └── mechanisms/
+├── wcm/
+│   └── widget/
+├── workflow/
+├── .dockerignore
+├── .gitignore
+├── README.md
 ├── fluig.json
 └── package.json
 </code></pre>
+<aside class="special"><p> As pastas <code>events/</code>, <code>forms/</code>, <code>reports/</code>, <code>wcm/</code> e <code>workflow/</code> fazem parte do scaffold padrão de um projeto Fluig e chegam vazias (apenas com <code>.gitkeep</code>). Elas continuam no repositório porque é ali que outros tipos de recurso entrariam num projeto real, mas não são usadas neste laboratório.</p>
+</aside>
 
 
       </google-codelab-step>
     
       <google-codelab-step label="Pré-requisitos" duration="3">
         <p>Você vai precisar de:</p>
-<ol type="1">
-<li><strong>Node.js 20 ou superior</strong></li>
-</ol>
+<h2 is-upgraded>1. Node.js 20 ou superior</h2>
 <pre><code language="language-bash" class="language-bash">node --version
 </code></pre>
-<ol type="1" start="2">
-<li><strong>Git</strong></li>
-</ol>
+<h2 is-upgraded>2. Git</h2>
 <pre><code language="language-bash" class="language-bash">git --version
 </code></pre>
-<ol type="1" start="3">
-<li>Uma conta no <strong>GitHub</strong></li>
+<h2 is-upgraded>3. Uma conta no GitHub</h2>
+<p>Você precisa ter acesso à organização que hospeda os repositórios da aula:</p>
+<p><a href="https://github.com/Projeto-Universo-TOTVS" target="_blank">https://github.com/Projeto-Universo-TOTVS</a></p>
+<h2 is-upgraded>4. Acesso a um ambiente Fluig</h2>
+<p><strong>Ambiente</strong></p>
+<p>Primeiramente, tenha certeza que o serviço do Fluig esteja rodando em sua máquina local.</p>
+<ul>
+<li>Ambiente: <a href="https://universo2.nimbvs.fluig.io/portal/p/universo/home" target="_blank">https://universo2.nimbvs.fluig.io/portal/p/universo/home</a></li>
+<li>Usuário: <code>universo</code></li>
+<li>Senha: <code>Universo@2026</code></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Abrindo a pasta de trabalho" duration="2">
+        <p>Você vai usar o <strong>Kiro</strong> como editor durante toda a aula. Antes de clonar o repositório, crie (ou confirme que já existe) uma pasta chamada <strong>Universo 2026</strong> na sua Área de trabalho (Desktop) e abra-a no Kiro. É dentro dela que você vai clonar o seu repositório e trabalhar durante toda a aula.</p>
+<h2 is-upgraded>1. Crie a pasta Universo 2026</h2>
+<p>Se a pasta ainda não existir no seu computador, crie-a na <strong>Área de Trabalho</strong>:</p>
+<ol type="1">
+<li>Minimize as janelas abertas (tecla <code>Windows + D</code>) até ver a Área de Trabalho.</li>
+<li>Clique com o botão direito em uma área vazia e escolha <strong>Novo &gt; Pasta</strong>.</li>
+<li>Nomeie a pasta exatamente como <code>Universo 2026</code> e pressione <code>Enter</code>.</li>
 </ol>
-<p class="image-container"><img alt="Tela de conta do GitHub" src="img/1c85be0e03f7a6ba.png"></p>
-<ol type="1" start="4">
-<li>Acesso a um ambiente Fluig apenas se quiser executar o deploy real.</li>
-</ol>
-<aside class="special"><p> O pipeline foi desenhado para que a parte de teste possa ser estudada mesmo sem acesso imediato a um servidor Fluig.</p>
+<h2 is-upgraded>2. Abra o Kiro</h2>
+<p>Clique no menu <strong>Iniciar</strong> do Windows, digite <code>Kiro</code> e abra o aplicativo. Se esta for a primeira vez, você verá a tela inicial de boas-vindas.</p>
+<h2 is-upgraded>3. Abra a pasta Universo 2026 no Kiro</h2>
+<p>Use um dos caminhos abaixo:</p>
+<ul>
+<li>No menu, acesse <strong>File &gt; Open Folder...</strong>;</li>
+<li>Ou, na tela inicial, clique em <strong>Open Folder</strong>;</li>
+<li>Ou use o atalho <code>Ctrl+K Ctrl+O</code>.</li>
+</ul>
+<p>Na janela do Windows que abrir, navegue até <strong>Área de Trabalho</strong>, selecione a pasta <code>Universo 2026</code> e clique em <strong>Selecionar Pasta</strong>.</p>
+<aside class="warning"><p> Se a pasta <code>Universo 2026</code> ainda não existir, você pode criá-la nessa mesma janela: clique com o botão direito dentro da Área de Trabalho e escolha <strong>Novo &gt; Pasta</strong>, nomeie como <code>Universo 2026</code> e então selecione-a.</p>
 </aside>
+<p>Se aparecer um aviso perguntando se você confia nos autores dos arquivos da pasta, clique em <strong>Yes, I trust the authors</strong> (ou equivalente).</p>
+<h2 is-upgraded>4. Abra o terminal integrado do Kiro</h2>
+<p>Com a pasta <code>Universo 2026</code> aberta no Kiro, abra o terminal integrado:</p>
+<ul>
+<li>Menu <strong>Terminal &gt; New Terminal</strong>;</li>
+<li>Ou atalho <code>Ctrl+`</code>.</li>
+</ul>
+<p>Por padrão, o terminal integrado do Kiro no Windows abre no <strong>PowerShell</strong>.</p>
+<h2 is-upgraded>5. Confirme que está no lugar certo</h2>
+<p>No terminal integrado do Kiro, rode:</p>
+<pre><code language="language-powershell" class="language-powershell">pwd
+</code></pre>
+<p>A saída deve apontar para o caminho da pasta <code>Universo 2026</code> que você acabou de abrir, por exemplo <code>C:\Users\<seu-usuario>\Desktop\Universo 2026</code>. É dentro dela, usando o terminal integrado do próprio Kiro, que o clone do seu repositório vai acontecer no próximo passo.</p>
 
 
       </google-codelab-step>
     
       <google-codelab-step label="Clone o projeto" duration="2">
-        <p>O repositório usado nesta aula é:</p>
-<p><a href="https://github.com/cardevisi/fluig-viagens-app-min" target="_blank">https://github.com/cardevisi/fluig-viagens-app-min</a></p>
-<p>Depois de acessar o repositório no GitHub, execute o clone localmente:</p>
-<pre><code language="language-bash" class="language-bash">git clone git@github.com:cardevisi/fluig-viagens-app-min.git
-cd fluig-viagens-app-min
+        <p><strong>Cada aluno tem o seu próprio repositório, já criado previamente no GitHub.</strong> Você só precisa  clonar.</p>
+<p>Os repositórios seguem o padrão de nome <code>fluig-viagens-app-alunoNN</code>, dentro da conta ou organização GitHub informada pelo instrutor:</p>
+<p>Conta do github: <a href="https://github.com/Projeto-Universo-TOTVS" target="_blank">https://github.com/Projeto-Universo-TOTVS</a></p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>Aluno</p>
+</td><td colspan="1" rowspan="1"><p>Repositório</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Aluno 01</p>
+</td><td colspan="1" rowspan="1"><p><code><GITHUB_ORG>/fluig-viagens-app-aluno01</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Aluno 02</p>
+</td><td colspan="1" rowspan="1"><p><code><GITHUB_ORG>/fluig-viagens-app-aluno02</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Aluno 03</p>
+</td><td colspan="1" rowspan="1"><p><code><GITHUB_ORG>/fluig-viagens-app-aluno03</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>...</p>
+</td><td colspan="1" rowspan="1"><p><code><GITHUB_ORG>/fluig-viagens-app-alunoNN</code></p>
+</td></tr>
+</table>
+<p class="image-container"><img alt="Tela de clone do GitHub" src="img/263c1d952c2ef51a.png"></p>
+<h2 is-upgraded>1. Identifique o seu repositório</h2>
+<p>Confirme com o instrutor qual <code>GITHUB_ORG</code> (conta ou organização que hospeda os repositórios) e qual <code>ALUNO_ID</code> foram atribuídos a você, e defina as variáveis abaixo. O exemplo usa <code>alunoNN</code>:</p>
+<pre><code language="language-bash" class="language-bash">GITHUB_ORG=&#34;Projeto-Universo-TOTVS&#34;
+ALUNO_ID=&#34;alunoNN&#34;
+REPO_ALUNO=&#34;fluig-viagens-app-${ALUNO_ID}&#34;
+REPO_SSH=&#34;git@github-AlunoUniverso2026:${GITHUB_ORG}/${REPO_ALUNO}.git&#34;
+echo &#34;$REPO_SSH&#34;
 </code></pre>
-<p class="image-container"><img alt="Tela de clone do GitHub" src="img/cb7cbd077d7f7ea5.png"></p>
+<h2 is-upgraded>2. Clone o seu repositório</h2>
+<pre><code language="language-bash" class="language-bash">git clone &#34;$REPO_SSH&#34;
+cd &#34;${REPO_ALUNO}&#34;
+</code></pre>
+<h2 is-upgraded>3. Confirme que está no lugar certo</h2>
+<p>O <code>origin</code> precisa apontar para o repositório com o <strong>seu </strong><code>ALUNO_ID</code>:</p>
+<pre><code language="language-bash" class="language-bash">git remote -v
+git branch --show-current
+</code></pre>
+<h2 is-upgraded>4. Valide o projeto localmente</h2>
+<pre><code language="language-bash" class="language-bash">npm test
+</code></pre>
+<p>Se os testes passarem, o seu ambiente está pronto para o resto da aula.</p>
+<h2 is-upgraded>5. Conhecendo o projeto fluig-viagens-app</h2>
+<pre><code language="language-text" class="language-text">fluig-viagens-app-alunoNN/
+├── .github/
+├── datasets/
+├── tests/
+├── docs/
+├── events/
+├── forms/
+├── reports/
+├── wcm/
+├── workflow/
+├── .dockerignore
+├── .gitignore
+├── README.md
+├── fluig.json
+└── package.json
+</code></pre>
+<aside class="warning"><p> Trabalhe somente no repositório com o seu <code>ALUNO_ID</code>. Todos os passos seguintes (dataset, teste e pipeline) assumem que você está dentro dessa pasta, e o deploy no fim da aula usa os Secrets configurados nesse repositório específico.</p>
+</aside>
 
 
       </google-codelab-step>
     
       <google-codelab-step label="Demonstração rápida: Extensão VS Code" duration="2">
-        <p>Antes de iniciarmos a implementação, vamos conhecer a nova extensão para VS Code para desenvolvimento no Fluig. Uma visão geral das principais funcionalidades que poderão ser utilizadas no seu dia a dia.</p>
+        <p>Antes de começar a implementação, conheça a nova extensão para VS Code para desenvolvimento no Fluig. A seguir, uma visão geral das principais funcionalidades que você poderá usar no seu dia a dia.</p>
 <p class="image-container"><img alt="Tela de extensão do VS Code" src="img/6773bd38c1be76a6.png"></p>
 <p>Principais recursos da extensão VS Code para Fluig:</p>
 <ul>
@@ -181,7 +268,7 @@ cd fluig-viagens-app-min
 <li>Criação e gerenciamento de ambientes (Por exemplo: dev, homologação, produção);</li>
 <li>Criação e gerenciamento de recursos Fluig;</li>
 <li>Recursos que ajudam na produtividade durante o desenvolvimento;</li>
-<li>Integração com o restante do fluxo que vamos explorar ao longo da aula.</li>
+<li>Integração com o restante do fluxo explorado ao longo da aula.</li>
 <li>MCP no Fluig CLI para automação de operações e desenvolvimento assistido por IA.</li>
 </ul>
 <aside class="special"><p> A extensão do VS Code segue em desenvolvimento, e novas versões trarão mais recursos e melhorias.</p>
@@ -191,10 +278,11 @@ cd fluig-viagens-app-min
       </google-codelab-step>
     
       <google-codelab-step label="Demonstração rápida: Novo Fluig CLI e MCP" duration="2">
-        <p>Com a visão geral da extensão, agora vamos olhar rapidamente o Fluig CLI em funcionamento. Esse momento é importante para você perceber como a experiência de uso do Fluig CLI se conecta com a automação que aparece mais adiante no pipeline.</p>
+        <p>Com a visão geral da extensão, veja agora o Fluig CLI em funcionamento. Esse momento é importante para você perceber como a experiência de uso do Fluig CLI se conecta com a automação que aparece mais adiante no pipeline.</p>
 <p class="image-container"><img alt="Tela de Fluig CLI em execução" src="img/447f7fc21b9c6f4c.png"></p>
-<p>Para essa demonstração, vamos utilizar uma sequência curta de comandos do Fluig CLI como exemplo:</p>
+<p>Esta demonstração usa uma sequência curta de comandos do Fluig CLI como exemplo:</p>
 <pre><code language="language-bash" class="language-bash">fluig --help
+fluig dataset list
 fluig projects list
 fluig servers list
 </code></pre>
@@ -289,7 +377,7 @@ fluig servers list
       </google-codelab-step>
     
       <google-codelab-step label="Dataset de países" duration="6">
-        <p>Abra <code>datasets/ds-viagens-paises.js</code>. O dataset atual já está pronto e usa a assinatura padrão do Fluig: a função <code>createDataset(fields, constraints, sortFields)</code> devolve um objeto montado com <code>DatasetBuilder</code>.</p>
+        <p>Neste passo você vai criar <code>datasets/ds-viagens-paises-alunoNN.js</code> executando um prompt no Kiro. No Fluig, a função <code>createDataset(fields, constraints, sortFields)</code> devolve um objeto montado com <code>DatasetBuilder</code>.</p>
 <p>Na prática, esses parâmetros representam:</p>
 <ul>
 <li><code>fields</code>: as colunas solicitadas pela consulta;</li>
@@ -297,6 +385,26 @@ fluig servers list
 <li><code>sortFields</code>: os campos pedidos para ordenação.</li>
 </ul>
 <p>Neste exemplo, eles aparecem para respeitar o contrato do Fluig, mesmo sem influenciarem o retorno, porque o dataset devolve sempre a mesma lista fixa de países.</p>
+<h2 is-upgraded>Prompt para construir o dataset com o Kiro</h2>
+<p>Crie o arquivo <code>datasets/ds-viagens-paises-alunoNN.js</code> (troque <code>alunoNN</code> pelo seu <code>ALUNO_ID</code>) e use o prompt abaixo no Kiro para gerar o conteúdo do dataset:</p>
+<pre><code language="language-text" class="language-text">Crie um dataset Fluig no arquivo datasets/ds-viagens-paises-alunoNN.js seguindo estas regras:
+
+1. Exponha uma função global `createDataset(fields, constraints, sortFields)`.
+2. Não use `require`, `import` ou `module.exports`: no runtime do Fluig as globais já existem.
+3. Use `var` e sintaxe ES5, compatível com o motor de script do Fluig.
+4. Os três parâmetros existem apenas para respeitar o contrato do Fluig. Neutralize-os com
+   `void fields;`, `void constraints;` e `void sortFields;` e explique isso em comentário.
+5. Monte o retorno com `DatasetBuilder.newDataset()`.
+6. Declare exatamente 3 colunas, nesta ordem: `codigo`, `nome` e `sigla`.
+7. Preencha 20 países como arrays de strings no formato
+   [codigo ISO-3, nome em português, sigla ISO-2].
+   Inclua obrigatoriamente [&#34;BRA&#34;, &#34;Brasil&#34;, &#34;BR&#34;] como primeira linha.
+8. Adicione as linhas com `ds.addRow()` dentro de um laço `for` clássico.
+9. Retorne o objeto `ds` no final da função.
+</code></pre>
+<aside class="special"><p> Peça ao Kiro para manter os comentários explicando a assinatura da função. Eles ajudam quem for ler o dataset depois a entender por que os parâmetros existem mesmo sem serem usados.</p>
+</aside>
+<p>Resultado esperado:</p>
 <pre><code language="language-javascript" class="language-javascript">function createDataset(fields, constraints, sortFields) {
   // Assinatura padrão de datasets no Fluig:
   // - fields: colunas solicitadas pela consulta
@@ -330,9 +438,9 @@ fluig servers list
     [&#34;AUS&#34;, &#34;Austrália&#34;, &#34;AU&#34;],
   ];
 
-  ds.addColumn(&#34;codigo&#34;, DatasetFieldType.STRING);
-  ds.addColumn(&#34;nome&#34;, DatasetFieldType.STRING);
-  ds.addColumn(&#34;sigla&#34;, DatasetFieldType.STRING);
+  ds.addColumn(&#34;codigo&#34;);
+  ds.addColumn(&#34;nome&#34;);
+  ds.addColumn(&#34;sigla&#34;);
 
   for (var i = 0; i &lt; rows.length; i++) {
     ds.addRow(rows[i]);
@@ -351,44 +459,665 @@ fluig servers list
 
       </google-codelab-step>
     
-      <google-codelab-step label="Teste de contrato" duration="7">
+      <google-codelab-step label="Teste do dataset" duration="15">
         <p>Em vez de criar toda a estrutura de teste do zero para cada dataset, o projeto usa uma base reaproveitável de validação:</p>
-<p><code>tests/datasets.contract.test.js</code></p>
+<p><code>tests/datasets.test.js</code></p>
 <p>Essa base concentra apenas o que pode ser compartilhado entre diferentes datasets. Ela faz quatro coisas:</p>
 <ol type="1">
 <li>varre a pasta <code>datasets/</code>;</li>
 <li>executa cada script dentro de um sandbox;</li>
-<li>injeta mocks de <code>DatasetBuilder</code> e <code>DatasetFieldType</code>;</li>
+<li>injeta mocks de <code>DatasetBuilder</code>;</li>
 <li>valida um contrato mínimo para todos os datasets.</li>
 </ol>
 <p>Isso é útil porque futuros datasets podem ter estruturas e regras de negócio diferentes, mas ainda assim continuarão precisando de algumas validações comuns, como carregamento do script, criação do dataset e consistência entre colunas e linhas.</p>
-<p>Trecho principal:</p>
-<pre><code language="language-javascript" class="language-javascript">const dataset = loadDataset(relativePath);
-const columns = dataset.getColumns();
-const rows = dataset.getRows();
+<h2 is-upgraded>A regra AAA</h2>
+<p>Antes de olhar o código, vale fixar o padrão que organiza todo teste bem escrito:</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>Fase</p>
+</td><td colspan="1" rowspan="1"><p>O que faz</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>Arrange</strong> (preparar)</p>
+</td><td colspan="1" rowspan="1"><p>Configura o cenário, cria os dados necessários e prepara o ambiente.</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>Act</strong> (agir)</p>
+</td><td colspan="1" rowspan="1"><p>Executa a ação ou função que se deseja testar.</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><strong>Assert</strong> (validar)</p>
+</td><td colspan="1" rowspan="1"><p>Checa se o resultado obtido é igual ao resultado esperado.</p>
+</td></tr>
+</table>
+<p>Neste teste, cada fase tem um papel bem concreto:</p>
+<ul>
+<li><strong>Arrange</strong> é montar o sandbox com os mocks de <code>DatasetBuilder</code> e executar o script do dataset ali dentro. É o que substitui o servidor Fluig.</li>
+<li><strong>Act</strong> é chamar <code>createDataset([], [], [])</code>, exatamente como o Fluig faria ao consultar o dataset.</li>
+<li><strong>Assert</strong> é comparar colunas e linhas com o contrato esperado.</li>
+</ul>
+<h2 is-upgraded>Montando o teste passo a passo</h2>
+<p>Em vez de colar o arquivo inteiro de uma vez, monte o teste em sete blocos. Cada bloco acrescenta um comportamento, e depois de cada um você roda <code>npm test</code> e vê a suíte crescer.</p>
+<p>Crie o arquivo <code>tests/datasets.test.js</code> vazio e vá <strong>acrescentando cada bloco ao final</strong> dele.</p>
+<aside class="special"><p> A ordem em que os blocos entram no arquivo não precisa ser a mesma da versão final. Em JavaScript, declarações de função sofrem <em>hoisting</em>: são registradas antes da execução, então um <code>test()</code> pode chamar uma função declarada mais abaixo no arquivo. Por isso o &#34;Arquivo completo para cópia&#34; agrupa os helpers no fim, enquanto aqui cada helper aparece junto do teste que o estreia.</p>
+</aside>
+<h3 is-upgraded>Passo 1: base do arquivo</h3>
+<p>Comece pelos imports e pelas constantes que o restante do arquivo usa. <code>COUNTRIES_PREFIX</code> é o que permite o teste funcionar sem edição, qualquer que seja o seu <code>ALUNO_ID</code>.</p>
+<pre><code language="language-javascript" class="language-javascript">&#34;use strict&#34;;
 
-assert.ok(Array.isArray(columns));
-assert.ok(Array.isArray(rows));
-assert.notEqual(columns.length, 0);
+const { test } = require(&#34;node:test&#34;);
+const assert = require(&#34;node:assert/strict&#34;);
+const fs = require(&#34;node:fs&#34;);
+const path = require(&#34;node:path&#34;);
+const vm = require(&#34;node:vm&#34;);
 
-const columnNames = columns.map((column) =&gt; column.name);
-assert.equal(new Set(columnNames).size, columnNames.length);
+const projectRoot = path.join(__dirname, &#34;..&#34;);
+const datasetsDir = path.join(projectRoot, &#34;datasets&#34;);
 
-for (const row of rows) {
-  assert.equal(row.length, columns.length);
+// Prefixo dos datasets de países da aula. Cobre qualquer sufixo de aluno
+// (ds-viagens-paises-aluno01.js, -aluno02.js, ...) sem precisar editar nada.
+const COUNTRIES_PREFIX = &#34;datasets/ds-viagens-paises&#34;;
+const COUNTRIES_COLUMNS = [&#34;codigo&#34;, &#34;nome&#34;, &#34;sigla&#34;];
+const COUNTRIES_TOTAL = 20;
+</code></pre>
+<pre><code language="language-bash" class="language-bash">npm test
+</code></pre>
+<p>A saída mostra <code># tests 1</code>, mas nenhum teste foi declarado ainda. Esse 1 é o próprio arquivo: o <code>node --test</code> conta cada arquivo de teste como uma unidade. A partir do próximo passo o número passa a refletir os testes de verdade.</p>
+<h3 is-upgraded>Passo 2: descobrir os datasets</h3>
+<p>O primeiro teste não valida dataset nenhum: ele valida que a suíte <strong>encontrou</strong> o que precisa testar. Sem ele, um erro de caminho deixaria todos os laços vazios e a suíte ficaria verde sem validar nada.</p>
+<p>Junto vêm os dois helpers de descoberta.</p>
+<pre><code language="language-javascript" class="language-javascript">// Lista recursivamente todos os arquivos .js da pasta datasets
+// para que qualquer novo recurso já entre automaticamente nos testes.
+function listDatasetFiles(dir, root = projectRoot) {
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
+    .flatMap((entry) =&gt; {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        return listDatasetFiles(fullPath, root);
+      }
+
+      if (entry.isFile() &amp;&amp; entry.name.endsWith(&#34;.js&#34;)) {
+        return [path.relative(root, fullPath).split(path.sep).join(&#34;/&#34;)];
+      }
+
+      return [];
+    })
+    .sort();
+}
+
+// Separa os datasets de países dos demais, para que as regras de negócio
+// só sejam aplicadas a quem realmente precisa atendê-las.
+function filterCountriesDatasets(datasetFiles) {
+  return datasetFiles.filter((relativePath) =&gt;
+    relativePath.startsWith(COUNTRIES_PREFIX),
+  );
+}
+
+test(&#34;a pasta datasets contém datasets para testar&#34;, () =&gt; {
+  // Arrange
+  const datasetsPath = datasetsDir;
+
+  // Act
+  const datasetFiles = listDatasetFiles(datasetsPath);
+  const countriesFiles = filterCountriesDatasets(datasetFiles);
+
+  // Assert
+  assert.notEqual(
+    datasetFiles.length,
+    0,
+    &#34;nenhum arquivo .js encontrado em datasets/&#34;,
+  );
+  assert.notEqual(
+    countriesFiles.length,
+    0,
+    `nenhum dataset encontrado com o prefixo ${COUNTRIES_PREFIX}`,
+  );
+});
+</code></pre>
+<pre><code language="language-bash" class="language-bash">npm test
+</code></pre>
+<p>Agora <code># pass 1</code>, e o nome do teste aparece na saída.</p>
+<h3 is-upgraded>Passo 3: garantir a função createDataset</h3>
+<p>Esta é a cláusula central do contrato com o Fluig: o servidor chama uma <code>createDataset</code> global, então o script precisa declará-la no nível superior. Aqui entram os dois helpers que substituem o servidor Fluig.</p>
+<pre><code language="language-javascript" class="language-javascript">// Arrange: monta o contexto com os mocks das globais que o Fluig fornece
+// em produção. O mock implementa apenas o necessário para este projeto.
+function createFluigSandbox() {
+  return {
+    console,
+    DatasetBuilder: {
+      newDataset() {
+        const columns = [];
+        const rows = [];
+
+        return {
+          addColumn(name, type) {
+            columns.push({ name, type });
+          },
+          addRow(values) {
+            rows.push(values);
+          },
+          getColumns() {
+            return columns;
+          },
+          getRows() {
+            return rows;
+          },
+        };
+      },
+    },
+  };
+}
+
+// Act de baixo nível: executa o arquivo exatamente como o Fluig faria.
+// Por ser um script (e não um módulo), a declaração `function createDataset`
+// no nível superior passa a ser propriedade do objeto global, que dentro
+// do vm é o próprio sandbox.
+function runDatasetScript(relativePath, sandbox) {
+  const fullPath = path.join(projectRoot, relativePath);
+  const code = fs.readFileSync(fullPath, &#34;utf8&#34;);
+
+  vm.createContext(sandbox);
+  vm.runInContext(code, sandbox, { filename: fullPath });
+
+  return sandbox;
+}
+
+test(&#34;todo dataset declara a função global createDataset&#34;, async (t) =&gt; {
+  for (const relativePath of listDatasetFiles(datasetsDir)) {
+    await t.test(relativePath, () =&gt; {
+      // Arrange: contexto isolado com as globais que o Fluig injeta.
+      const sandbox = createFluigSandbox();
+
+      // Act: executa o script do dataset dentro desse contexto.
+      runDatasetScript(relativePath, sandbox);
+
+      // Assert: o Fluig chama uma createDataset global, então o script
+      // precisa declará-la no nível superior para o deploy fazer sentido.
+      assert.equal(
+        typeof sandbox.createDataset,
+        &#34;function&#34;,
+        `${relativePath} deve declarar a função global createDataset`,
+      );
+    });
+  }
+});
+</code></pre>
+<pre><code language="language-bash" class="language-bash">npm test
+</code></pre>
+<p>O total salta para <code># pass 3</code>. Esse teste usa <code>t.test()</code> para criar um subteste por dataset, então ele conta como 1 teste pai mais 1 subteste para cada arquivo da pasta.</p>
+<h3 is-upgraded>Passo 4: validar colunas e linhas</h3>
+<p>Daqui em diante os testes precisam <strong>chamar</strong> a <code>createDataset</code>. O helper <code>loadCreateDataset</code> concentra esse Arrange e devolve a função pronta.</p>
+<pre><code language="language-javascript" class="language-javascript">// Arrange completo para os testes de comportamento: devolve a createDataset
+// pronta para ser chamada no passo Act. Aqui é `throw`, e não `assert`,
+// porque um cenário que não pode ser montado é falha de setup, não de
+// expectativa. A existência da função é verificada em teste próprio.
+function loadCreateDataset(relativePath) {
+  const sandbox = runDatasetScript(relativePath, createFluigSandbox());
+
+  if (typeof sandbox.createDataset !== &#34;function&#34;) {
+    throw new Error(
+      `${relativePath} não declarou a função global createDataset. ` +
+        `Use &#34;function createDataset(...)&#34; no nível superior do arquivo, ` +
+        `sem module.exports, export ou IIFE.`,
+    );
+  }
+
+  return sandbox.createDataset;
+}
+
+test(&#34;todo dataset devolve colunas e linhas consistentes&#34;, async (t) =&gt; {
+  for (const relativePath of listDatasetFiles(datasetsDir)) {
+    await t.test(relativePath, () =&gt; {
+      // Arrange
+      const createDataset = loadCreateDataset(relativePath);
+
+      // Act: reproduz a chamada do Fluig com fields, constraints e sortFields
+      // vazios, ou seja, a consulta mais simples possível.
+      const dataset = createDataset([], [], []);
+      const columns = dataset.getColumns();
+      const rows = dataset.getRows();
+      const columnNames = columns.map((column) =&gt; column.name);
+
+      // Assert
+      assert.ok(Array.isArray(columns), &#34;getColumns deve devolver um array&#34;);
+      assert.ok(Array.isArray(rows), &#34;getRows deve devolver um array&#34;);
+      assert.notEqual(columns.length, 0, &#34;dataset sem colunas declaradas&#34;);
+      assert.equal(
+        new Set(columnNames).size,
+        columnNames.length,
+        `${relativePath} declara colunas com nome duplicado`,
+      );
+
+      for (const [index, row] of rows.entries()) {
+        assert.equal(
+          row.length,
+          columns.length,
+          `linha ${index} tem ${row.length} valores para ${columns.length} colunas`,
+        );
+      }
+    });
+  }
+});
+</code></pre>
+<pre><code language="language-bash" class="language-bash">npm test
+</code></pre>
+<p><code># pass 5</code>. Este é o último teste do contrato genérico: tudo aqui vale para qualquer dataset, sem mencionar país nenhum.</p>
+<h3 is-upgraded>Passo 5: travar a ordem das colunas</h3>
+<p>Começam as regras de negócio, aplicadas só aos datasets de países. Repare no <code>filterCountriesDatasets</code> envolvendo a lista: é o que impede que um <code>ds-viagens-cidades.js</code> futuro seja obrigado a ter as colunas de país.</p>
+<pre><code language="language-javascript" class="language-javascript">test(&#34;todo dataset de países expõe as colunas na ordem esperada&#34;, async (t) =&gt; {
+  for (const relativePath of filterCountriesDatasets(
+    listDatasetFiles(datasetsDir),
+  )) {
+    await t.test(relativePath, () =&gt; {
+      // Arrange
+      const createDataset = loadCreateDataset(relativePath);
+
+      // Act
+      const dataset = createDataset([], [], []);
+      const columnNames = dataset
+        .getColumns()
+        .map((column) =&gt; column.name);
+
+      // Assert: a ordem faz parte do contrato, não só os nomes. O Fluig
+      // entrega cada linha como array posicional, sem chave: quem consome
+      // (formulário, widget, zoom) lê row[0], row[1] e row[2]. Conferir
+      // posição por posição aponta exatamente qual coluna saiu do lugar.
+      assert.equal(columnNames[0], &#34;codigo&#34;);
+      assert.equal(columnNames[1], &#34;nome&#34;);
+      assert.equal(columnNames[2], &#34;sigla&#34;);
+      assert.equal(columnNames.length, COUNTRIES_COLUMNS.length);
+    });
+  }
+});
+</code></pre>
+<pre><code language="language-bash" class="language-bash">npm test
+</code></pre>
+<p><code># pass 7</code>.</p>
+<h3 is-upgraded>Passo 6: conferir o total de países</h3>
+<pre><code language="language-javascript" class="language-javascript">test(&#34;todo dataset de países devolve a lista completa&#34;, async (t) =&gt; {
+  for (const relativePath of filterCountriesDatasets(
+    listDatasetFiles(datasetsDir),
+  )) {
+    await t.test(relativePath, () =&gt; {
+      // Arrange
+      const createDataset = loadCreateDataset(relativePath);
+
+      // Act
+      const rows = createDataset([], [], []).getRows();
+
+      // Assert
+      assert.equal(
+        rows.length,
+        COUNTRIES_TOTAL,
+        `${relativePath} deve ter ${COUNTRIES_TOTAL} países`,
+      );
+    });
+  }
+});
+</code></pre>
+<pre><code language="language-bash" class="language-bash">npm test
+</code></pre>
+<p><code># pass 9</code>.</p>
+<h3 is-upgraded>Passo 7: conferir a linha do Brasil</h3>
+<p>O último teste valida um registro conhecido de ponta a ponta. O <code>assert.ok(brazil, ...)</code> antes do <code>deepEqual</code> existe para a falha dizer &#34;não achei a linha BRA&#34; em vez de estourar um <code>TypeError</code> ao tentar ler <code>undefined</code>.</p>
+<pre><code language="language-javascript" class="language-javascript">test(&#34;todo dataset de países contém a linha do Brasil&#34;, async (t) =&gt; {
+  for (const relativePath of filterCountriesDatasets(
+    listDatasetFiles(datasetsDir),
+  )) {
+    await t.test(relativePath, () =&gt; {
+      // Arrange
+      const createDataset = loadCreateDataset(relativePath);
+
+      // Act
+      const rows = createDataset([], [], []).getRows();
+      const brazil = rows.find((row) =&gt; row[0] === &#34;BRA&#34;);
+
+      // Assert
+      assert.ok(brazil, `${relativePath} não tem a linha com código BRA`);
+      assert.deepEqual(Array.from(brazil), [&#34;BRA&#34;, &#34;Brasil&#34;, &#34;BR&#34;]);
+    });
+  }
+});
+</code></pre>
+<pre><code language="language-bash" class="language-bash">npm test
+</code></pre>
+<p><code># pass 11</code>.</p>
+<h3 is-upgraded>Resumo da montagem</h3>
+<p>Os números abaixo valem para uma pasta <code>datasets/</code> com <strong>um</strong> dataset:</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>Passo</p>
+</td><td colspan="1" rowspan="1"><p>O que entra</p>
+</td><td colspan="1" rowspan="1"><p>Testes acumulados</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>1</p>
+</td><td colspan="1" rowspan="1"><p>imports e constantes</p>
+</td><td colspan="1" rowspan="1"><p>1 (só o arquivo)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>2</p>
+</td><td colspan="1" rowspan="1"><p>descoberta dos datasets</p>
+</td><td colspan="1" rowspan="1"><p>1</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>3</p>
+</td><td colspan="1" rowspan="1"><p>contrato da <code>createDataset</code></p>
+</td><td colspan="1" rowspan="1"><p>3</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>4</p>
+</td><td colspan="1" rowspan="1"><p>colunas e linhas consistentes</p>
+</td><td colspan="1" rowspan="1"><p>5</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>5</p>
+</td><td colspan="1" rowspan="1"><p>ordem das colunas</p>
+</td><td colspan="1" rowspan="1"><p>7</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>6</p>
+</td><td colspan="1" rowspan="1"><p>total de países</p>
+</td><td colspan="1" rowspan="1"><p>9</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>7</p>
+</td><td colspan="1" rowspan="1"><p>linha do Brasil</p>
+</td><td colspan="1" rowspan="1"><p>11</p>
+</td></tr>
+</table>
+<p>Se a sua pasta tiver dois datasets, cada teste dos passos 3 a 7 ganha um subteste extra, e o total final vira 16 em vez de 11.</p>
+<aside class="special"><p> Vale experimentar quebrar o dataset de propósito: troque a ordem de <code>nome</code> e <code>sigla</code> nas chamadas de <code>addColumn</code> e rode <code>npm test</code>. Só o teste do passo 5 falha, e a mensagem aponta a coluna errada. Os outros continuam verdes, mostrando que o resto do contrato segue intacto. É essa precisão que um teste único validando tudo não consegue dar.</p>
+</aside>
+<h2 is-upgraded>Arquivo completo para cópia</h2>
+<p>Esta é a versão final do arquivo, com os sete blocos já reunidos e os helpers agrupados no fim. Use como referência para conferir a sua montagem, ou copie na íntegra caso prefira pular o passo a passo.</p>
+<p>Cada teste segue a regra <strong>AAA</strong>, com as três fases marcadas em comentário:</p>
+<ul>
+<li><strong>Arrange</strong>: prepara o cenário, montando o sandbox com os mocks do runtime do Fluig.</li>
+<li><strong>Act</strong>: executa a ação sob teste, rodando o script ou chamando <code>createDataset</code>.</li>
+<li><strong>Assert</strong>: compara o resultado obtido com o esperado.</li>
+</ul>
+<pre><code language="language-javascript" class="language-javascript">&#34;use strict&#34;;
+
+const { test } = require(&#34;node:test&#34;);
+const assert = require(&#34;node:assert/strict&#34;);
+const fs = require(&#34;node:fs&#34;);
+const path = require(&#34;node:path&#34;);
+const vm = require(&#34;node:vm&#34;);
+
+const projectRoot = path.join(__dirname, &#34;..&#34;);
+const datasetsDir = path.join(projectRoot, &#34;datasets&#34;);
+
+// Prefixo dos datasets de países da aula. Cobre qualquer sufixo de aluno
+// (ds-viagens-paises-aluno01.js, -alunoNN.js, ...) sem precisar editar nada.
+const COUNTRIES_PREFIX = &#34;datasets/ds-viagens-paises&#34;;
+const COUNTRIES_COLUMNS = [&#34;codigo&#34;, &#34;nome&#34;, &#34;sigla&#34;];
+const COUNTRIES_TOTAL = 20;
+
+// ===========================================================================
+// Cada teste abaixo segue a regra AAA:
+//   Arrange  prepara o cenário (sandbox com os mocks do runtime do Fluig)
+//   Act      executa a ação sob teste (rodar o script / chamar createDataset)
+//   Assert   compara o resultado obtido com o esperado
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// Descoberta: garante que a suíte realmente encontrou o que precisa testar.
+// Sem isso, um erro de caminho faria a suíte passar sem validar nada.
+// ---------------------------------------------------------------------------
+test(&#34;a pasta datasets contém datasets para testar&#34;, () =&gt; {
+  // Arrange
+  const datasetsPath = datasetsDir;
+
+  // Act
+  const datasetFiles = listDatasetFiles(datasetsPath);
+  const countriesFiles = filterCountriesDatasets(datasetFiles);
+
+  // Assert
+  assert.notEqual(
+    datasetFiles.length,
+    0,
+    &#34;nenhum arquivo .js encontrado em datasets/&#34;,
+  );
+  assert.notEqual(
+    countriesFiles.length,
+    0,
+    `nenhum dataset encontrado com o prefixo ${COUNTRIES_PREFIX}`,
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Contrato genérico: vale para qualquer dataset da pasta datasets/.
+// ---------------------------------------------------------------------------
+test(&#34;todo dataset declara a função global createDataset&#34;, async (t) =&gt; {
+  for (const relativePath of listDatasetFiles(datasetsDir)) {
+    await t.test(relativePath, () =&gt; {
+      // Arrange: contexto isolado com as globais que o Fluig injeta.
+      const sandbox = createFluigSandbox();
+
+      // Act: executa o script do dataset dentro desse contexto.
+      runDatasetScript(relativePath, sandbox);
+
+      // Assert: o Fluig chama uma createDataset global, então o script
+      // precisa declará-la no nível superior para o deploy fazer sentido.
+      assert.equal(
+        typeof sandbox.createDataset,
+        &#34;function&#34;,
+        `${relativePath} deve declarar a função global createDataset`,
+      );
+    });
+  }
+});
+
+test(&#34;todo dataset devolve colunas e linhas consistentes&#34;, async (t) =&gt; {
+  for (const relativePath of listDatasetFiles(datasetsDir)) {
+    await t.test(relativePath, () =&gt; {
+      // Arrange
+      const createDataset = loadCreateDataset(relativePath);
+
+      // Act: reproduz a chamada do Fluig com fields, constraints e sortFields
+      // vazios, ou seja, a consulta mais simples possível.
+      const dataset = createDataset([], [], []);
+      const columns = dataset.getColumns();
+      const rows = dataset.getRows();
+      const columnNames = columns.map((column) =&gt; column.name);
+
+      // Assert
+      assert.ok(Array.isArray(columns), &#34;getColumns deve devolver um array&#34;);
+      assert.ok(Array.isArray(rows), &#34;getRows deve devolver um array&#34;);
+      assert.notEqual(columns.length, 0, &#34;dataset sem colunas declaradas&#34;);
+      assert.equal(
+        new Set(columnNames).size,
+        columnNames.length,
+        `${relativePath} declara colunas com nome duplicado`,
+      );
+
+      for (const [index, row] of rows.entries()) {
+        assert.equal(
+          row.length,
+          columns.length,
+          `linha ${index} tem ${row.length} valores para ${columns.length} colunas`,
+        );
+      }
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Regra de negócio: específica dos datasets de países.
+// ---------------------------------------------------------------------------
+test(&#34;todo dataset de países expõe as colunas na ordem esperada&#34;, async (t) =&gt; {
+  for (const relativePath of filterCountriesDatasets(
+    listDatasetFiles(datasetsDir),
+  )) {
+    await t.test(relativePath, () =&gt; {
+      // Arrange
+      const createDataset = loadCreateDataset(relativePath);
+
+      // Act
+      const dataset = createDataset([], [], []);
+      const columnNames = dataset
+        .getColumns()
+        .map((column) =&gt; column.name);
+
+      // Assert: a ordem faz parte do contrato, não só os nomes. O Fluig
+      // entrega cada linha como array posicional, sem chave: quem consome
+      // (formulário, widget, zoom) lê row[0], row[1] e row[2]. Conferir
+      // posição por posição aponta exatamente qual coluna saiu do lugar.
+      assert.equal(columnNames[0], &#34;codigo&#34;);
+      assert.equal(columnNames[1], &#34;nome&#34;);
+      assert.equal(columnNames[2], &#34;sigla&#34;);
+      assert.equal(columnNames.length, COUNTRIES_COLUMNS.length);
+    });
+  }
+});
+
+test(&#34;todo dataset de países devolve a lista completa&#34;, async (t) =&gt; {
+  for (const relativePath of filterCountriesDatasets(
+    listDatasetFiles(datasetsDir),
+  )) {
+    await t.test(relativePath, () =&gt; {
+      // Arrange
+      const createDataset = loadCreateDataset(relativePath);
+
+      // Act
+      const rows = createDataset([], [], []).getRows();
+
+      // Assert
+      assert.equal(
+        rows.length,
+        COUNTRIES_TOTAL,
+        `${relativePath} deve ter ${COUNTRIES_TOTAL} países`,
+      );
+    });
+  }
+});
+
+test(&#34;todo dataset de países contém a linha do Brasil&#34;, async (t) =&gt; {
+  for (const relativePath of filterCountriesDatasets(
+    listDatasetFiles(datasetsDir),
+  )) {
+    await t.test(relativePath, () =&gt; {
+      // Arrange
+      const createDataset = loadCreateDataset(relativePath);
+
+      // Act
+      const rows = createDataset([], [], []).getRows();
+      const brazil = rows.find((row) =&gt; row[0] === &#34;BRA&#34;);
+
+      // Assert
+      assert.ok(brazil, `${relativePath} não tem a linha com código BRA`);
+      assert.deepEqual(Array.from(brazil), [&#34;BRA&#34;, &#34;Brasil&#34;, &#34;BR&#34;]);
+    });
+  }
+});
+
+// ===========================================================================
+// Helpers de Arrange e Act. Nenhum deles faz assert: preparar o cenário e
+// validar o resultado são responsabilidades separadas.
+// ===========================================================================
+
+// Lista recursivamente todos os arquivos .js da pasta datasets
+// para que qualquer novo recurso já entre automaticamente nos testes.
+function listDatasetFiles(dir, root = projectRoot) {
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
+    .flatMap((entry) =&gt; {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        return listDatasetFiles(fullPath, root);
+      }
+
+      if (entry.isFile() &amp;&amp; entry.name.endsWith(&#34;.js&#34;)) {
+        return [path.relative(root, fullPath).split(path.sep).join(&#34;/&#34;)];
+      }
+
+      return [];
+    })
+    .sort();
+}
+
+// Separa os datasets de países dos demais, para que as regras de negócio
+// só sejam aplicadas a quem realmente precisa atendê-las.
+function filterCountriesDatasets(datasetFiles) {
+  return datasetFiles.filter((relativePath) =&gt;
+    relativePath.startsWith(COUNTRIES_PREFIX),
+  );
+}
+
+// Arrange: monta o contexto com os mocks das globais que o Fluig fornece
+// em produção. O mock implementa apenas o necessário para este projeto.
+function createFluigSandbox() {
+  return {
+    console,
+    DatasetBuilder: {
+      newDataset() {
+        const columns = [];
+        const rows = [];
+
+        return {
+          addColumn(name, type) {
+            columns.push({ name, type });
+          },
+          addRow(values) {
+            rows.push(values);
+          },
+          getColumns() {
+            return columns;
+          },
+          getRows() {
+            return rows;
+          },
+        };
+      },
+    },
+  };
+}
+
+// Act de baixo nível: executa o arquivo exatamente como o Fluig faria.
+// Por ser um script (e não um módulo), a declaração `function createDataset`
+// no nível superior passa a ser propriedade do objeto global, que dentro
+// do vm é o próprio sandbox.
+function runDatasetScript(relativePath, sandbox) {
+  const fullPath = path.join(projectRoot, relativePath);
+  const code = fs.readFileSync(fullPath, &#34;utf8&#34;);
+
+  vm.createContext(sandbox);
+  vm.runInContext(code, sandbox, { filename: fullPath });
+
+  return sandbox;
+}
+
+// Arrange completo para os testes de comportamento: devolve a createDataset
+// pronta para ser chamada no passo Act. Aqui é `throw`, e não `assert`,
+// porque um cenário que não pode ser montado é falha de setup, não de
+// expectativa. A existência da função é verificada em teste próprio.
+function loadCreateDataset(relativePath) {
+  const sandbox = runDatasetScript(relativePath, createFluigSandbox());
+
+  if (typeof sandbox.createDataset !== &#34;function&#34;) {
+    throw new Error(
+      `${relativePath} não declarou a função global createDataset. ` +
+        `Use &#34;function createDataset(...)&#34; no nível superior do arquivo, ` +
+        `sem module.exports, export ou IIFE.`,
+    );
+  }
+
+  return sandbox.createDataset;
 }
 </code></pre>
-<p>Para o dataset <code>ds-viagens-paises.js</code>, o teste ainda faz validações específicas:</p>
-<pre><code language="language-javascript" class="language-javascript">if (relativePath === &#34;datasets/ds-viagens-paises.js&#34;) {
-  assert.deepEqual(columnNames, [&#34;codigo&#34;, &#34;nome&#34;, &#34;sigla&#34;]);
-  assert.equal(rows.length, 20);
-  assert.deepEqual(Array.from(rows.find((row) =&gt; row[0] === &#34;BRA&#34;)), [
-    &#34;BRA&#34;,
-    &#34;Brasil&#34;,
-    &#34;BR&#34;,
-  ]);
-}
-</code></pre>
+<h2 is-upgraded>O que observar no teste</h2>
+<p>O arquivo está dividido em camadas. Ler nessa ordem ajuda:</p>
+<p><strong>1. Descoberta</strong>, garante que a suíte realmente encontrou o que precisa testar.:</p>
+<ul>
+<li><code>a pasta datasets contém datasets para testar</code> valida se existem arquivos datasets na pasta datasets.</li>
+</ul>
+<p><strong>2. Contrato genérico</strong>, aplicado a todo dataset da pasta:</p>
+<ul>
+<li><code>dataset declara a função global createDataset</code> valida se todos os datasets criados possuem a função createDataset.</li>
+<li><code>dataset devolve colunas e linhas consistentes</code> cobre o que vale para qualquer dataset: colunas e linhas são arrays, existe pelo menos uma coluna, não há nome de coluna duplicado e toda linha tem a mesma quantidade de valores que de colunas.</li>
+</ul>
+<p><strong>3. Regra de negócio</strong>, aplicada só aos datasets de países, selecionados por <code>COUNTRIES_PREFIX</code>:</p>
+<ul>
+<li><code>expõe as colunas na ordem esperada</code> trava a <strong>ordem</strong>, não só os nomes. O Fluig entrega cada linha como array posicional, sem chave: quem consome lê <code>row[0]</code>, <code>row[1]</code> e <code>row[2]</code>. Conferir posição por posição aponta exatamente qual coluna saiu do lugar.</li>
+<li><code>devolve a lista completa</code> confere o total de 20 países.</li>
+<li><code>contém a linha do Brasil</code> confere um registro conhecido de ponta a ponta.</li>
+</ul>
+<p>Nos helpers:</p>
+<ul>
+<li><code>listDatasetFiles</code> varre a pasta recursivamente, então novos datasets entram nos testes sem precisar de ajuste.</li>
+<li><code>filterCountriesDatasets</code> usa prefixo em vez de nome fixo. É isso que faz o arquivo funcionar sem edição, qualquer que seja o seu <code>ALUNO_ID</code>.</li>
+<li><code>createFluigSandbox</code> e <code>runDatasetScript</code> são o Arrange: montam os mocks e executam o script no contexto isolado do <code>node:vm</code>.</li>
+</ul>
 <h2 is-upgraded>Execute localmente</h2>
 <pre><code language="language-bash" class="language-bash">npm test
 </code></pre>
@@ -399,7 +1128,7 @@ for (const row of rows) {
       </google-codelab-step>
     
       <google-codelab-step label="Workflow único de CI/CD" duration="8">
-        <p>O projeto agora usa apenas um workflow:</p>
+        <p>Workflow de CI/CD do projeto contendo dois jobs:</p>
 <p><code>/.github/workflows/fluig-deploy.yml</code></p>
 <p>Ele responde a:</p>
 <ul>
@@ -468,6 +1197,141 @@ DATASETS=&#34;$(git diff --name-only &#34;$BASE&#34; &#34;${GITHUB_SHA}&#34; | g
 <li>fazer deploy apenas do que mudou;</li>
 <li>ou informar manualmente uma lista de datasets, um por linha.</li>
 </ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Enviando as mudanças e acompanhando o pipeline" duration="12">
+        <p>Agora é hora de ver o pipeline funcionando de verdade. Neste passo você vai enviar para o GitHub o que construiu nos passos <strong>Dataset de países</strong>, <strong>Teste do dataset</strong> e <strong>Workflow único de CI/CD</strong>, e acompanhar a execução na aba <strong>Actions</strong>.</p>
+<h2 is-upgraded>1. Abra a aba Actions do seu repositório</h2>
+<p>Antes de fazer o commit, deixe a aba <strong>Actions</strong> aberta no navegador. Assim você vê a execução aparecer assim que o push chegar ao GitHub.</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>Aluno</p>
+</td><td colspan="1" rowspan="1"><p>Aba Actions</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Aluno 01</p>
+</td><td colspan="1" rowspan="1"><p><a href="https://github.com/Projeto-Universo-TOTVS/fluig-viagens-app-aluno01/actions" target="_blank">https://github.com/Projeto-Universo-TOTVS/fluig-viagens-app-aluno01/actions</a></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Aluno 02</p>
+</td><td colspan="1" rowspan="1"><p><a href="https://github.com/Projeto-Universo-TOTVS/fluig-viagens-app-aluno02/actions" target="_blank">https://github.com/Projeto-Universo-TOTVS/fluig-viagens-app-aluno02/actions</a></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Aluno 03</p>
+</td><td colspan="1" rowspan="1"><p><a href="https://github.com/Projeto-Universo-TOTVS/fluig-viagens-app-aluno03/actions" target="_blank">https://github.com/Projeto-Universo-TOTVS/fluig-viagens-app-aluno03/actions</a></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>...</p>
+</td><td colspan="1" rowspan="1"><p><code>https://github.com/Projeto-Universo-TOTVS/fluig-viagens-app-alunoNN/actions</code></p>
+</td></tr>
+</table>
+<p>Na lateral esquerda da página, o workflow aparece com o nome <strong>Fluig Deploy</strong>, que é o <code>name</code> definido no <code>fluig-deploy.yml</code>.</p>
+<aside class="warning"><p> Abra somente o link com o <strong>seu </strong><code>ALUNO_ID</code>. Se a página mostrar erro 404, confirme se você está logado no GitHub com a conta que tem acesso à organização <code>Projeto-Universo-TOTVS</code>.</p>
+</aside>
+<h2 is-upgraded>2. Confira o que mudou</h2>
+<p>Volte ao terminal integrado do Kiro, dentro da pasta <code>fluig-viagens-app-alunoNN</code>, e rode:</p>
+<pre><code language="language-bash" class="language-bash">git status
+</code></pre>
+<p>A saída deve listar os arquivos criados ou alterados nos passos anteriores, por exemplo:</p>
+<pre><code language="language-text" class="language-text">Untracked files:
+  datasets/ds-viagens-paises-alunoNN.js
+  tests/datasets.test.js
+</code></pre>
+<p>Se você também ajustou o workflow, <code>.github/workflows/fluig-deploy.yml</code> aparece em <code>Changes not staged for commit</code>.</p>
+<aside class="special"><p> Antes de enviar, rode <code>npm test</code> mais uma vez. Se os testes passam na sua máquina, eles devem passar no job <code>test</code> do pipeline, que executa exatamente o mesmo comando.</p>
+</aside>
+<h2 is-upgraded>3. Adicione os arquivos ao commit</h2>
+<p>Adicione apenas as pastas trabalhadas na aula:</p>
+<pre><code language="language-bash" class="language-bash">git add datasets/ tests/ .github/
+git status
+</code></pre>
+<p>Agora os arquivos aparecem em <code>Changes to be committed</code>.</p>
+<h2 is-upgraded>4. Faça o commit</h2>
+<pre><code language="language-bash" class="language-bash">git commit -m &#34;feat: adiciona dataset de países e testes do alunoNN&#34;
+</code></pre>
+<p>Troque <code>alunoNN</code> pelo seu <code>ALUNO_ID</code> na mensagem.</p>
+<h2 is-upgraded>5. Envie para o GitHub</h2>
+<p>O pipeline só roda no GitHub, então o commit precisa ser enviado:</p>
+<pre><code language="language-bash" class="language-bash">git push origin main
+</code></pre>
+<p>Como o push altera arquivos em <code>datasets/</code> e <code>tests/</code>, o filtro de <code>paths</code> do workflow é atendido e a execução começa automaticamente.</p>
+<h2 is-upgraded>6. Volte para o GitHub e acompanhe o pipeline</h2>
+<p>Volte para a aba <strong>Actions</strong> que você deixou aberta e atualize a página, se necessário:</p>
+<ol type="1">
+<li>Uma nova execução do workflow <strong>Fluig Deploy</strong> aparece no topo da lista, com a mensagem do seu commit.</li>
+<li>Clique nela para abrir o resumo. Você vê os dois jobs, <code>test</code> e <code>deploy</code>, ligados por uma seta, porque o <code>deploy</code> depende do <code>test</code> (<code>needs: test</code>).</li>
+<li>Clique no job <code>test</code> e expanda o step <strong>Rodar testes</strong> para ver a saída do <code>npm test</code>.</li>
+<li>Quando o <code>test</code> terminar com sucesso, o <code>deploy</code> começa. Abra o step <strong>Descobrir datasets alterados</strong> e confira, em <code>Selecionados:</code>, que aparece o seu <code>datasets/ds-viagens-paises-alunoNN.js</code>.</li>
+</ol>
+<p>Os ícones indicam o estado de cada job:</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>Ícone</p>
+</td><td colspan="1" rowspan="1"><p>Significado</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Círculo amarelo</p>
+</td><td colspan="1" rowspan="1"><p>Em execução ou na fila</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Check verde</p>
+</td><td colspan="1" rowspan="1"><p>Concluído com sucesso</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>X vermelho</p>
+</td><td colspan="1" rowspan="1"><p>Falhou; abra o step para ver o erro no log</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Círculo cinza com traço</p>
+</td><td colspan="1" rowspan="1"><p>Pulado (por exemplo, <code>deploy</code> quando o <code>test</code> falha)</p>
+</td></tr>
+</table>
+<aside class="warning"><p> Se o job <code>test</code> falhar, corrija o problema localmente, rode <code>npm test</code> até passar e repita os passos 3 a 5. Um novo push gera uma nova execução na aba Actions.</p>
+</aside>
+<aside class="special"><p> O job <code>deploy</code> usa os Secrets do repositório para publicar no Fluig. Os detalhes de como ele funciona por dentro (imagem Docker, script e Secrets) aparecem nos próximos passos.</p>
+</aside>
+<h2 is-upgraded>7. Simulando uma quebra no pipeline</h2>
+<p>Até aqui você viu o caminho feliz. Agora vamos quebrar o pipeline de propósito para ver o teste barrando um dataset errado antes que ele chegue ao Fluig.</p>
+<h3 is-upgraded>Remova um país do dataset</h3>
+<p>Abra <code>datasets/ds-viagens-paises-alunoNN.js</code> e apague a linha da Austrália:</p>
+<pre><code language="language-javascript" class="language-javascript">    [&#34;AUS&#34;, &#34;Austrália&#34;, &#34;AU&#34;],
+</code></pre>
+<p>Agora o dataset devolve 19 países, mas o teste <code>devolve a lista completa</code> espera <code>COUNTRIES_TOTAL = 20</code>.</p>
+<aside class="warning"><p> Não remova a linha do Brasil. Ela é validada por outro teste, e a ideia aqui é quebrar uma regra só, para a falha ficar fácil de ler.</p>
+</aside>
+<h3 is-upgraded>Faça o commit e envie</h3>
+<pre><code language="language-bash" class="language-bash">git status
+git add datasets/
+git commit -m &#34;test: remove um país para simular quebra no pipeline&#34;
+git push origin main
+</code></pre>
+<p>Repare que, desta vez, você não rodou <code>npm test</code> antes de enviar. É exatamente esse descuido que o pipeline existe para pegar.</p>
+<h3 is-upgraded>Acompanhe a falha na aba Actions</h3>
+<p>Volte para a aba <strong>Actions</strong> e abra a nova execução do <strong>Fluig Deploy</strong>:</p>
+<ol type="1">
+<li>O job <code>test</code> termina com o <strong>X vermelho</strong>.</li>
+<li>O job <code>deploy</code> fica <strong>cinza, como pulado</strong>. O <code>needs: test</code> junto com a condição <code>needs.test.result == 'success'</code> impede que um dataset quebrado seja publicado.</li>
+<li>Abra o job <code>test</code> e expanda o step <strong>Rodar testes</strong>. Procure o trecho da falha:</li>
+</ol>
+<pre><code language="language-text" class="language-text"># Subtest: todo dataset de países devolve a lista completa
+    # Subtest: datasets/ds-viagens-paises-alunoNN.js
+    not ok 1 - datasets/ds-viagens-paises-alunoNN.js
+      ---
+      failureType: &#39;testCodeFailure&#39;
+      error: |-
+        datasets/ds-viagens-paises-alunoNN.js deve ter 20 países
+
+        19 !== 20
+
+      code: &#39;ERR_ASSERTION&#39;
+      name: &#39;AssertionError&#39;
+</code></pre>
+<p>No resumo final do log aparece <code># fail 2</code>: uma falha é o subteste do seu arquivo e a outra é o teste pai <code>devolve a lista completa</code>, que falha junto. Os demais testes continuam passando.</p>
+<aside class="special"><p> A mensagem <code>deve ter 20 países</code> vem do terceiro argumento do <code>assert.equal</code> no teste. Uma mensagem clara no assert é o que permite entender a falha direto pelo log do pipeline, sem precisar abrir o código.</p>
+</aside>
+<h3 is-upgraded>Corrija e veja o pipeline voltar ao verde</h3>
+<p>Devolva a linha da Austrália ao final da lista em <code>datasets/ds-viagens-paises-alunoNN.js</code>:</p>
+<pre><code language="language-javascript" class="language-javascript">    [&#34;AUS&#34;, &#34;Austrália&#34;, &#34;AU&#34;],
+</code></pre>
+<p>Confirme localmente e envie a correção:</p>
+<pre><code language="language-bash" class="language-bash">npm test
+git add datasets/
+git commit -m &#34;fix: restaura a lista completa de países&#34;
+git push origin main
+</code></pre>
+<p>Na aba <strong>Actions</strong>, a nova execução deve mostrar o <code>test</code> com <strong>check verde</strong> e, em seguida, o <code>deploy</code> rodando e publicando o dataset corrigido.</p>
 
 
       </google-codelab-step>
@@ -590,6 +1454,10 @@ RUN case &#34;${TARGETARCH}&#34; in \
 <li>como o <code>fluig-deploy.yml</code> concentra teste e deploy;</li>
 <li>como o Fluig CLI foi encapsulado em Docker para simplificar a pipeline.</li>
 </ul>
+<aside class="special"><p> O CLI não é apenas uma forma diferente de executar comandos do Fluig. Ele é uma peça que permite levar o desenvolvimento do Fluig para um fluxo mais automatizado e integrado às ferramentas que os times já utilizam.</p>
+</aside>
+<aside class="special"><p> A partir daqui, o próximo passo é pensar: quais partes do seu processo hoje são manuais e poderiam fazer parte de uma pipeline?</p>
+</aside>
 <h2 is-upgraded>Para continuar praticando</h2>
 <ul>
 <li>Adicione um novo dataset em <code>datasets/</code> e rode <code>npm test</code>.</li>
@@ -598,7 +1466,11 @@ RUN case &#34;${TARGETARCH}&#34; in \
 </ul>
 <h2 is-upgraded>Referências</h2>
 <ul>
-<li>Repositório: <a href="https://github.com/cardevisi/fluig-viagens-app-min" target="_blank">https://github.com/cardevisi/fluig-viagens-app-min</a></li>
+<li>Se quiser se aprofundar no GitHub Actions futuramente, use estas referências:</li>
+<li><strong>Marketplace de Actions</strong>: catálogo de ações prontas que podem ser reutilizadas em workflows. <a href="https://github.com/marketplace?type=actions" target="_blank">https://github.com/marketplace?type=actions</a></li>
+<li><strong>Sintaxe de workflows</strong>: referência oficial dos campos aceitos nos arquivos YAML do GitHub Actions. <a href="https://docs.github.com/pt/actions/reference/workflows-and-actions/workflow-syntax" target="_blank">https://docs.github.com/pt/actions/reference/workflows-and-actions/workflow-syntax</a></li>
+<li><strong>Tipos de eventos do GitHub</strong>: ajuda a entender quais eventos podem disparar automações no pipeline. <a href="https://docs.github.com/pt/rest/using-the-rest-api/github-event-types?apiVersion=2026-03-10" target="_blank">https://docs.github.com/pt/rest/using-the-rest-api/github-event-types?apiVersion=2026-03-10</a></li>
+<li>Repositório: <a href="https://github.com/cardevisi/fluig-viagens-app" target="_blank">https://github.com/cardevisi/fluig-viagens-app</a></li>
 <li><a href="../README.md" target="_blank">README.md</a></li>
 <li><a href="../.github/workflows/fluig-deploy.yml" target="_blank">fluig-deploy.yml</a></li>
 <li><a href="../.github/scripts/fluig-resource-deploy.mjs" target="_blank">fluig-resource-deploy.mjs</a></li>
