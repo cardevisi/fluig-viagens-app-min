@@ -163,26 +163,33 @@
       <google-codelab-step label="Clone o projeto" duration="2">
         <p>O repositório usado nesta aula é:</p>
 <p><a href="https://github.com/cardevisi/fluig-viagens-app-min" target="_blank">https://github.com/cardevisi/fluig-viagens-app-min</a></p>
-<p>Primeiro, faça o clone do projeto base:</p>
+<p class="image-container"><img alt="Tela de clone do GitHub" src="img/263c1d952c2ef51a.png"></p>
+<p>Primeiro, defina o identificador do seu repositório. Neste exemplo, vamos usar <code>aluno-02</code>, mas você pode trocar por <code>aluno-01</code>, <code>aluno-03</code> e assim por diante:</p>
+<pre><code language="language-bash" class="language-bash">ALUNO_ID=&#34;aluno-02&#34;
+REPO_ALUNO=&#34;fluig-viagens-app-${ALUNO_ID}&#34;
+REPO_URL=&#34;git@github.com:cardevisi/${REPO_ALUNO}.git&#34;
+REPO_HTTP=&#34;https://github.com/cardevisi/${REPO_ALUNO}&#34;
+echo &#34;$REPO_HTTP&#34;
+</code></pre>
+<p>Depois disso, faça o clone do projeto base e renomeie a pasta local:</p>
 <pre><code language="language-bash" class="language-bash">git clone git@github.com:cardevisi/fluig-viagens-app-min.git
-mv fluig-viagens-app-min fluig-viagens-app-aluno-02
-cd fluig-viagens-app-aluno-02
+mv fluig-viagens-app-min &#34;${REPO_ALUNO}&#34;
+cd &#34;${REPO_ALUNO}&#34;
 </code></pre>
 <p>Depois, confira o repositório remoto configurado no clone:</p>
 <pre><code language="language-bash" class="language-bash">git remote -v
 </code></pre>
 <p>Em seguida, crie o seu repositório no GitHub com o GitHub CLI:</p>
-<pre><code language="language-bash" class="language-bash">gh repo create cardevisi/fluig-viagens-app-aluno-02 --private
+<pre><code language="language-bash" class="language-bash">gh repo create &#34;cardevisi/${REPO_ALUNO}&#34; --private
 </code></pre>
 <p>Agora atualize o <code>origin</code> para apontar para o repositório que você acabou de criar:</p>
-<pre><code language="language-bash" class="language-bash">git remote set-url origin git@github.com:cardevisi/fluig-viagens-app-aluno-02.git
+<pre><code language="language-bash" class="language-bash">git remote set-url origin &#34;${REPO_URL}&#34;
 git remote -v
 </code></pre>
 <p>Por fim, envie a sua cópia do projeto para o GitHub:</p>
 <pre><code language="language-bash" class="language-bash">git push -u origin main
 </code></pre>
-<p>aside note Para usar <code>gh repo create</code>, você precisa já estar autenticado no GitHub CLI. Se necessário, rode <code>gh auth login</code> antes de começar. O comando <code>git push -u origin main</code> foi escolhido porque, após o clone, a branch local existente é a <code>main</code>. O comando <code>git push origin fluig-viagens-app-aluno-02</code> falharia nesse momento, já que essa branch ainda não existe localmente.</p>
-<p class="image-container"><img alt="Tela de clone do GitHub" src="img/cb7cbd077d7f7ea5.png"></p>
+<p>aside note Para usar <code>gh repo create</code>, você precisa já estar autenticado no GitHub CLI. Se necessário, rode <code>gh auth login</code> antes de começar. O comando <code>git push -u origin main</code> foi escolhido porque, após o clone, a branch local existente é a <code>main</code>. Repare que, ao alterar apenas <code>ALUNO_ID</code>, os nomes do repositório, os links e o <code>origin</code> são atualizados automaticamente nos próximos comandos.</p>
 
 
       </google-codelab-step>

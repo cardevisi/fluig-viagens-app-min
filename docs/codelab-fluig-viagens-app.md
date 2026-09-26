@@ -101,12 +101,25 @@ O repositório usado nesta aula é:
 
 <https://github.com/cardevisi/fluig-viagens-app-min>
 
-Primeiro, faça o clone do projeto base:
+![Tela de clone do GitHub](assets/clone-repository-http.png)
+
+Primeiro, defina o identificador do seu repositório. Neste exemplo, vamos usar `aluno-02`, mas
+você pode trocar por `aluno-01`, `aluno-03` e assim por diante:
+
+```bash
+ALUNO_ID="aluno-02"
+REPO_ALUNO="fluig-viagens-app-${ALUNO_ID}"
+REPO_URL="git@github.com:cardevisi/${REPO_ALUNO}.git"
+REPO_HTTP="https://github.com/cardevisi/${REPO_ALUNO}"
+echo "$REPO_HTTP"
+```
+
+Depois disso, faça o clone do projeto base e renomeie a pasta local:
 
 ```bash
 git clone git@github.com:cardevisi/fluig-viagens-app-min.git
-mv fluig-viagens-app-min fluig-viagens-app-aluno-02
-cd fluig-viagens-app-aluno-02
+mv fluig-viagens-app-min "${REPO_ALUNO}"
+cd "${REPO_ALUNO}"
 ```
 
 Depois, confira o repositório remoto configurado no clone:
@@ -118,13 +131,13 @@ git remote -v
 Em seguida, crie o seu repositório no GitHub com o GitHub CLI:
 
 ```bash
-gh repo create cardevisi/fluig-viagens-app-aluno-02 --private
+gh repo create "cardevisi/${REPO_ALUNO}" --private
 ```
 
 Agora atualize o `origin` para apontar para o repositório que você acabou de criar:
 
 ```bash
-git remote set-url origin git@github.com:cardevisi/fluig-viagens-app-aluno-02.git
+git remote set-url origin "${REPO_URL}"
 git remote -v
 ```
 
@@ -137,10 +150,10 @@ git push -u origin main
 > aside note
 > Para usar `gh repo create`, você precisa já estar autenticado no GitHub CLI. Se necessário, rode
 > `gh auth login` antes de começar. O comando `git push -u origin main` foi escolhido porque, após
-> o clone, a branch local existente é a `main`. O comando `git push origin fluig-viagens-app-aluno-02`
-> falharia nesse momento, já que essa branch ainda não existe localmente.
+> o clone, a branch local existente é a `main`. Repare que, ao alterar apenas `ALUNO_ID`, os nomes
+> do repositório, os links e o `origin` são atualizados automaticamente nos próximos comandos.
 
-![Tela de clone do GitHub](assets/clone-github.png)
+
 
 ## Demonstração rápida: Extensão VS Code
 Duration: 0:02:00
