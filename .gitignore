@@ -1,6 +1,6 @@
 .DS_Store
 .github/.DS_Store
+.github/bin/
 node_modules/
 coverage/
 .tools/fluig-studio-cli-v0.1.0-mvp.4
-
