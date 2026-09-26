@@ -163,10 +163,25 @@
       <google-codelab-step label="Clone o projeto" duration="2">
         <p>O repositório usado nesta aula é:</p>
 <p><a href="https://github.com/cardevisi/fluig-viagens-app-min" target="_blank">https://github.com/cardevisi/fluig-viagens-app-min</a></p>
-<p>Depois de acessar o repositório no GitHub, execute o clone localmente:</p>
+<p>Primeiro, faça o clone do projeto base:</p>
 <pre><code language="language-bash" class="language-bash">git clone git@github.com:cardevisi/fluig-viagens-app-min.git
-cd fluig-viagens-app-min
+mv fluig-viagens-app-min fluig-viagens-app-aluno-02
+cd fluig-viagens-app-aluno-02
 </code></pre>
+<p>Depois, confira o repositório remoto configurado no clone:</p>
+<pre><code language="language-bash" class="language-bash">git remote -v
+</code></pre>
+<p>Em seguida, crie o seu repositório no GitHub com o GitHub CLI:</p>
+<pre><code language="language-bash" class="language-bash">gh repo create cardevisi/fluig-viagens-app-aluno-02 --private
+</code></pre>
+<p>Agora atualize o <code>origin</code> para apontar para o repositório que você acabou de criar:</p>
+<pre><code language="language-bash" class="language-bash">git remote set-url origin git@github.com:cardevisi/fluig-viagens-app-aluno-02.git
+git remote -v
+</code></pre>
+<p>Por fim, envie a sua cópia do projeto para o GitHub:</p>
+<pre><code language="language-bash" class="language-bash">git push -u origin main
+</code></pre>
+<p>aside note Para usar <code>gh repo create</code>, você precisa já estar autenticado no GitHub CLI. Se necessário, rode <code>gh auth login</code> antes de começar. O comando <code>git push -u origin main</code> foi escolhido porque, após o clone, a branch local existente é a <code>main</code>. O comando <code>git push origin fluig-viagens-app-aluno-02</code> falharia nesse momento, já que essa branch ainda não existe localmente.</p>
 <p class="image-container"><img alt="Tela de clone do GitHub" src="img/cb7cbd077d7f7ea5.png"></p>
 
 
@@ -399,7 +414,7 @@ for (const row of rows) {
       </google-codelab-step>
     
       <google-codelab-step label="Workflow único de CI/CD" duration="8">
-        <p>O projeto agora usa apenas um workflow:</p>
+        <p>Workflow de CI/CD do projeto contendo dois jobs:</p>
 <p><code>/.github/workflows/fluig-deploy.yml</code></p>
 <p>Ele responde a:</p>
 <ul>

@@ -101,12 +101,44 @@ O repositório usado nesta aula é:
 
 <https://github.com/cardevisi/fluig-viagens-app-min>
 
-Depois de acessar o repositório no GitHub, execute o clone localmente:
+Primeiro, faça o clone do projeto base:
 
 ```bash
 git clone git@github.com:cardevisi/fluig-viagens-app-min.git
-cd fluig-viagens-app-min
+mv fluig-viagens-app-min fluig-viagens-app-aluno-02
+cd fluig-viagens-app-aluno-02
 ```
+
+Depois, confira o repositório remoto configurado no clone:
+
+```bash
+git remote -v
+```
+
+Em seguida, crie o seu repositório no GitHub com o GitHub CLI:
+
+```bash
+gh repo create cardevisi/fluig-viagens-app-aluno-02 --private
+```
+
+Agora atualize o `origin` para apontar para o repositório que você acabou de criar:
+
+```bash
+git remote set-url origin git@github.com:cardevisi/fluig-viagens-app-aluno-02.git
+git remote -v
+```
+
+Por fim, envie a sua cópia do projeto para o GitHub:
+
+```bash
+git push -u origin main
+```
+
+> aside note
+> Para usar `gh repo create`, você precisa já estar autenticado no GitHub CLI. Se necessário, rode
+> `gh auth login` antes de começar. O comando `git push -u origin main` foi escolhido porque, após
+> o clone, a branch local existente é a `main`. O comando `git push origin fluig-viagens-app-aluno-02`
+> falharia nesse momento, já que essa branch ainda não existe localmente.
 
 ![Tela de clone do GitHub](assets/clone-github.png)
 
@@ -368,7 +400,7 @@ npm test
 ## Workflow único de CI/CD
 Duration: 0:08:00
 
-O projeto agora usa apenas um workflow:
+Workflow de CI/CD do projeto contendo dois jobs:
 
 `/.github/workflows/fluig-deploy.yml`
 
