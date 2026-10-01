@@ -10,7 +10,7 @@ const projectRoot = path.join(__dirname, "..");
 const datasetsDir = path.join(projectRoot, "datasets");
 
 // Prefixo dos datasets de países da aula. Cobre qualquer sufixo de aluno
-// (ds-viagens-paises-aluno-01.js, -aluno-NNN.js, ...) sem precisar editar nada.
+// (ds-viagens-paises-aluno01.js, -alunoNNN.js, ...) sem precisar editar nada.
 const COUNTRIES_PREFIX = "datasets/ds-viagens-paises";
 const COUNTRIES_COLUMNS = ["codigo", "nome", "sigla"];
 const COUNTRIES_TOTAL = 20;

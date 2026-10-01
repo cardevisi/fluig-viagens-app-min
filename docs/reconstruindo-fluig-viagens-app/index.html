@@ -99,7 +99,7 @@
 <li>Ver rapidamente a extensão do VS Code usada no ecossistema Fluig.</li>
 <li>Ver o Fluig CLI em funcionamento com um overview dos principais comandos.</li>
 <li>Entender a estrutura mínima do projeto.</li>
-<li>Construir o dataset <code>ds-viagens-paises-aluno-NN.js</code> com o apoio do Kiro.</li>
+<li>Construir o dataset <code>ds-viagens-paises-alunoNN.js</code> com o apoio do Kiro.</li>
 <li>Validar o teste de contrato com <code>npm test</code>.</li>
 <li>Ler o workflow <code>.github/workflows/fluig-deploy.yml</code>.</li>
 <li>Entender como o deploy roda dentro do container usando o Fluig CLI na imagem <code>ghcr.io/cardevisi/fluig-cli:0.1.0</code>.</li>
@@ -115,7 +115,7 @@
 <li>Como utilizar o novo Fluig CLI para automatizar fluxos dentro do pipeline.</li>
 </ul>
 <h2 is-upgraded>O que você vai construir</h2>
-<pre><code language="language-text" class="language-text">fluig-viagens-app-aluno-NN/
+<pre><code language="language-text" class="language-text">fluig-viagens-app-alunoNN/
 ├── .github/
 │   ├── docker/
 │   │   └── fluig-cli/
@@ -125,7 +125,7 @@
 │   └── workflows/
 │       └── fluig-deploy.yml
 ├── datasets/
-│   └── ds-viagens-paises-aluno-NN.js
+│   └── ds-viagens-paises-alunoNN.js
 ├── tests/
 │   └── datasets.test.js
 ├── docs/
@@ -196,28 +196,28 @@
     
       <google-codelab-step label="Clone o projeto" duration="2">
         <p><strong>Cada aluno tem o seu próprio repositório, já criado previamente no GitHub.</strong> Você só precisa  clonar.</p>
-<p>Os repositórios seguem o padrão de nome <code>fluig-viagens-app-aluno-<NN></code>:</p>
+<p>Os repositórios seguem o padrão de nome <code>fluig-viagens-app-alunoNN</code>:</p>
 <table>
 <tr><td colspan="1" rowspan="1"><p>Aluno</p>
 </td><td colspan="1" rowspan="1"><p>Repositório</p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p>Aluno 01</p>
-</td><td colspan="1" rowspan="1"><p><code>cardevisi/fluig-viagens-app-aluno-01</code></p>
+</td><td colspan="1" rowspan="1"><p><code>cardevisi/fluig-viagens-app-aluno01</code></p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p>Aluno 02</p>
-</td><td colspan="1" rowspan="1"><p><code>cardevisi/fluig-viagens-app-aluno-02</code></p>
+</td><td colspan="1" rowspan="1"><p><code>cardevisi/fluig-viagens-app-aluno02</code></p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p>Aluno 03</p>
-</td><td colspan="1" rowspan="1"><p><code>cardevisi/fluig-viagens-app-aluno-03</code></p>
+</td><td colspan="1" rowspan="1"><p><code>cardevisi/fluig-viagens-app-aluno03</code></p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p>...</p>
-</td><td colspan="1" rowspan="1"><p><code>cardevisi/fluig-viagens-app-aluno-NN</code></p>
+</td><td colspan="1" rowspan="1"><p><code>cardevisi/fluig-viagens-app-alunoNN</code></p>
 </td></tr>
 </table>
 <p class="image-container"><img alt="Tela de clone do GitHub" src="img/263c1d952c2ef51a.png"></p>
 <h2 is-upgraded>1. Identifique o seu repositório</h2>
-<p>Confirme com o instrutor qual <code>ALUNO_ID</code> foi atribuído a você e defina as variáveis abaixo. O exemplo usa <code>aluno-NN</code>:</p>
-<pre><code language="language-bash" class="language-bash">ALUNO_ID=&#34;aluno-NN&#34;
+<p>Confirme com o instrutor qual <code>ALUNO_ID</code> foi atribuído a você e defina as variáveis abaixo. O exemplo usa <code>alunoNN</code>:</p>
+<pre><code language="language-bash" class="language-bash">ALUNO_ID=&#34;alunoNN&#34;
 REPO_ALUNO=&#34;fluig-viagens-app-${ALUNO_ID}&#34;
 REPO_SSH=&#34;git@github.com:cardevisi/${REPO_ALUNO}.git&#34;
 echo &#34;$REPO_SSH&#34;
@@ -361,7 +361,7 @@ fluig servers list
       </google-codelab-step>
     
       <google-codelab-step label="Dataset de países" duration="6">
-        <p>Neste passo você vai criar <code>datasets/ds-viagens-paises-aluno-NN.js</code> executando um prompt no Kiro. No Fluig, a função <code>createDataset(fields, constraints, sortFields)</code> devolve um objeto montado com <code>DatasetBuilder</code>.</p>
+        <p>Neste passo você vai criar <code>datasets/ds-viagens-paises-alunoNN.js</code> executando um prompt no Kiro. No Fluig, a função <code>createDataset(fields, constraints, sortFields)</code> devolve um objeto montado com <code>DatasetBuilder</code>.</p>
 <p>Na prática, esses parâmetros representam:</p>
 <ul>
 <li><code>fields</code>: as colunas solicitadas pela consulta;</li>
@@ -370,8 +370,8 @@ fluig servers list
 </ul>
 <p>Neste exemplo, eles aparecem para respeitar o contrato do Fluig, mesmo sem influenciarem o retorno, porque o dataset devolve sempre a mesma lista fixa de países.</p>
 <h2 is-upgraded>Prompt para construir o dataset com o Kiro</h2>
-<p>Crie o arquivo <code>datasets/ds-viagens-paises-aluno-NN.js</code> (troque <code>aluno-NN</code> pelo seu <code>ALUNO_ID</code>) e use o prompt abaixo no Kiro para gerar o conteúdo do dataset:</p>
-<pre><code language="language-text" class="language-text">Crie um dataset Fluig no arquivo datasets/ds-viagens-paises-aluno-NN.js seguindo estas regras:
+<p>Crie o arquivo <code>datasets/ds-viagens-paises-alunoNN.js</code> (troque <code>alunoNN</code> pelo seu <code>ALUNO_ID</code>) e use o prompt abaixo no Kiro para gerar o conteúdo do dataset:</p>
+<pre><code language="language-text" class="language-text">Crie um dataset Fluig no arquivo datasets/ds-viagens-paises-alunoNN.js seguindo estas regras:
 
 1. Exponha uma função global `createDataset(fields, constraints, sortFields)`.
 2. Não use `require`, `import` ou `module.exports`: no runtime do Fluig as globais já existem.
@@ -497,7 +497,7 @@ const projectRoot = path.join(__dirname, &#34;..&#34;);
 const datasetsDir = path.join(projectRoot, &#34;datasets&#34;);
 
 // Prefixo dos datasets de países da aula. Cobre qualquer sufixo de aluno
-// (ds-viagens-paises-aluno-01.js, -aluno-02.js, ...) sem precisar editar nada.
+// (ds-viagens-paises-aluno01.js, -aluno02.js, ...) sem precisar editar nada.
 const COUNTRIES_PREFIX = &#34;datasets/ds-viagens-paises&#34;;
 const COUNTRIES_COLUMNS = [&#34;codigo&#34;, &#34;nome&#34;, &#34;sigla&#34;];
 const COUNTRIES_TOTAL = 20;
@@ -825,7 +825,7 @@ const projectRoot = path.join(__dirname, &#34;..&#34;);
 const datasetsDir = path.join(projectRoot, &#34;datasets&#34;);
 
 // Prefixo dos datasets de países da aula. Cobre qualquer sufixo de aluno
-// (ds-viagens-paises-aluno-01.js, -aluno-NN.js, ...) sem precisar editar nada.
+// (ds-viagens-paises-aluno01.js, -alunoNN.js, ...) sem precisar editar nada.
 const COUNTRIES_PREFIX = &#34;datasets/ds-viagens-paises&#34;;
 const COUNTRIES_COLUMNS = [&#34;codigo&#34;, &#34;nome&#34;, &#34;sigla&#34;];
 const COUNTRIES_TOTAL = 20;
