@@ -162,6 +162,9 @@
 <pre><code language="language-bash" class="language-bash">git --version
 </code></pre>
 <h2 is-upgraded>3. Uma conta no GitHub</h2>
+<p>Você precisa ter acesso à organização que hospeda os repositórios da aula:</p>
+<p><a href="https://github.com/Projeto-Universo-TOTVS" target="_blank">https://github.com/Projeto-Universo-TOTVS</a></p>
+<p>Confirme com o instrutor que a sua conta GitHub foi adicionada como membro ou colaborador dessa organização antes de seguir para o passo de clone do projeto. Sem esse acesso, o <code>git clone</code> e o <code>git push</code> do seu repositório vão falhar com erro de permissão.</p>
 <p>Se quiser se aprofundar no GitHub Actions futuramente, use estas referências:</p>
 <ul>
 <li><strong>Marketplace de Actions</strong>: catálogo de ações prontas que podem ser reutilizadas em workflows. <a href="https://github.com/marketplace?type=actions" target="_blank">https://github.com/marketplace?type=actions</a></li>
@@ -171,22 +174,9 @@
 <h2 is-upgraded>4. Acesso a um ambiente Fluig</h2>
 <p>O ambiente Fluig usado nesta aula é:</p>
 <p><a href="https://universo2.nimbvs.fluig.io/portal/p/universo/home" target="_blank">https://universo2.nimbvs.fluig.io/portal/p/universo/home</a></p>
-<p>Acessos</p>
-<table>
-<tr><td colspan="1" rowspan="1"><p>Perfil</p>
-</td><td colspan="1" rowspan="1"><p>Usuário</p>
-</td><td colspan="1" rowspan="1"><p>Senha</p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p>wcmadmin</p>
-</td><td colspan="1" rowspan="1"><p><code>wcmad</code></p>
-</td><td colspan="1" rowspan="1"><p><code>Fluig@20</code></p>
-</td></tr>
-<tr><td colspan="1" rowspan="1"><p>Administrador Tenant</p>
-</td><td colspan="1" rowspan="1"><p><code>univers</code></p>
-</td><td colspan="1" rowspan="1"><p><code>Universo@</code></p>
-</td></tr>
-</table>
-<aside class="warning"><p> Essas credenciais valem apenas para o ambiente temporário desta aula. Não reutilize esses usuários e senhas em outros ambientes e não versione credenciais de ambientes reais em repositório. No pipeline, os valores equivalentes ficam em <strong>Secrets</strong> do GitHub (<code>FLUIG_BASE_URL</code>, <code>FLUIG_USERNAME</code> e <code>FLUIG_PASSWORD</code>).</p>
+<p>Os dados de acesso (usuários e senhas) estão nesta planilha:</p>
+<p><a href="https://docs.google.com/spreadsheets/d/1RPQ9X7SsVMobBEIiodkETqbvEzC32EC1HsAdNXwdtKM/edit?gid=0#gid=0" target="_blank">https://docs.google.com/spreadsheets/d/1RPQ9X7SsVMobBEIiodkETqbvEzC32EC1HsAdNXwdtKM/edit?gid=0#gid=0</a></p>
+<aside class="warning"><p> As credenciais da planilha valem apenas para o ambiente temporário desta aula. Não reutilize esses usuários e senhas em outros ambientes e não versione credenciais de ambientes reais em repositório. No pipeline, os valores equivalentes ficam em <strong>Secrets</strong> do GitHub (<code>FLUIG_BASE_URL</code>, <code>FLUIG_USERNAME</code> e <code>FLUIG_PASSWORD</code>).</p>
 </aside>
 <aside class="special"><p> O pipeline foi desenhado para que a parte de teste possa ser estudada mesmo sem acesso imediato a um servidor Fluig.</p>
 </aside>
@@ -196,32 +186,35 @@
     
       <google-codelab-step label="Clone o projeto" duration="2">
         <p><strong>Cada aluno tem o seu próprio repositório, já criado previamente no GitHub.</strong> Você só precisa  clonar.</p>
-<p>Os repositórios seguem o padrão de nome <code>fluig-viagens-app-alunoNN</code>:</p>
+<p>Os repositórios seguem o padrão de nome <code>fluig-viagens-app-alunoNN</code>, dentro da conta ou organização GitHub informada pelo instrutor:</p>
 <table>
 <tr><td colspan="1" rowspan="1"><p>Aluno</p>
 </td><td colspan="1" rowspan="1"><p>Repositório</p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p>Aluno 01</p>
-</td><td colspan="1" rowspan="1"><p><code>cardevisi/fluig-viagens-app-aluno01</code></p>
+</td><td colspan="1" rowspan="1"><p><code><GITHUB_ORG>/fluig-viagens-app-aluno01</code></p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p>Aluno 02</p>
-</td><td colspan="1" rowspan="1"><p><code>cardevisi/fluig-viagens-app-aluno02</code></p>
+</td><td colspan="1" rowspan="1"><p><code><GITHUB_ORG>/fluig-viagens-app-aluno02</code></p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p>Aluno 03</p>
-</td><td colspan="1" rowspan="1"><p><code>cardevisi/fluig-viagens-app-aluno03</code></p>
+</td><td colspan="1" rowspan="1"><p><code><GITHUB_ORG>/fluig-viagens-app-aluno03</code></p>
 </td></tr>
 <tr><td colspan="1" rowspan="1"><p>...</p>
-</td><td colspan="1" rowspan="1"><p><code>cardevisi/fluig-viagens-app-alunoNN</code></p>
+</td><td colspan="1" rowspan="1"><p><code><GITHUB_ORG>/fluig-viagens-app-alunoNN</code></p>
 </td></tr>
 </table>
 <p class="image-container"><img alt="Tela de clone do GitHub" src="img/263c1d952c2ef51a.png"></p>
 <h2 is-upgraded>1. Identifique o seu repositório</h2>
-<p>Confirme com o instrutor qual <code>ALUNO_ID</code> foi atribuído a você e defina as variáveis abaixo. O exemplo usa <code>alunoNN</code>:</p>
-<pre><code language="language-bash" class="language-bash">ALUNO_ID=&#34;alunoNN&#34;
+<p>Confirme com o instrutor qual <code>GITHUB_ORG</code> (conta ou organização que hospeda os repositórios) e qual <code>ALUNO_ID</code> foram atribuídos a você, e defina as variáveis abaixo. O exemplo usa <code>alunoNN</code>:</p>
+<pre><code language="language-bash" class="language-bash">GITHUB_ORG=&#34;Projeto-Universo-TOTVS&#34;
+ALUNO_ID=&#34;alunoNN&#34;
 REPO_ALUNO=&#34;fluig-viagens-app-${ALUNO_ID}&#34;
-REPO_SSH=&#34;git@github.com:cardevisi/${REPO_ALUNO}.git&#34;
+REPO_SSH=&#34;git@github.com:${GITHUB_ORG}/${REPO_ALUNO}.git&#34;
 echo &#34;$REPO_SSH&#34;
 </code></pre>
+<aside class="special"><p> A conta ou organização pode variar conforme a turma (ex: <code>cardevisi</code>, <code>Projeto-Universo-TOTVS</code>). Ajuste <code>GITHUB_ORG</code> para o valor informado pelo instrutor antes de clonar.</p>
+</aside>
 <h2 is-upgraded>2. Clone o seu repositório</h2>
 <pre><code language="language-bash" class="language-bash">git clone &#34;$REPO_SSH&#34;
 cd &#34;${REPO_ALUNO}&#34;

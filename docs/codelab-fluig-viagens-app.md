@@ -108,6 +108,14 @@ git --version
 
 ### 3. Uma conta no GitHub
 
+Você precisa ter acesso à organização que hospeda os repositórios da aula:
+
+<https://github.com/Projeto-Universo-TOTVS>
+
+Confirme com o instrutor que a sua conta GitHub foi adicionada como membro ou colaborador dessa
+organização antes de seguir para o passo de clone do projeto. Sem esse acesso, o `git clone` e o
+`git push` do seu repositório vão falhar com erro de permissão.
+
 Se quiser se aprofundar no GitHub Actions futuramente, use estas referências:
 
 - **Marketplace de Actions**: catálogo de ações prontas que podem ser reutilizadas em workflows.
@@ -123,16 +131,13 @@ O ambiente Fluig usado nesta aula é:
 
 <https://universo2.nimbvs.fluig.io/portal/p/universo/home>
 
-Acessos
+Os dados de acesso (usuários e senhas) estão nesta planilha:
 
-| Perfil | Usuário | Senha |
-|---|---|---|
-| wcmadmin | `wcmad` | `Fluig@20` |
-| Administrador Tenant | `univers` | `Universo@` |
+<https://docs.google.com/spreadsheets/d/1RPQ9X7SsVMobBEIiodkETqbvEzC32EC1HsAdNXwdtKM/edit?gid=0#gid=0>
 
 > aside negative
-> Essas credenciais valem apenas para o ambiente temporário desta aula. Não reutilize esses
-> usuários e senhas em outros ambientes e não versione credenciais de ambientes reais em
+> As credenciais da planilha valem apenas para o ambiente temporário desta aula. Não reutilize
+> esses usuários e senhas em outros ambientes e não versione credenciais de ambientes reais em
 > repositório. No pipeline, os valores equivalentes ficam em **Secrets** do GitHub
 > (`FLUIG_BASE_URL`, `FLUIG_USERNAME` e `FLUIG_PASSWORD`).
 
@@ -145,28 +150,34 @@ Duration: 0:02:00
 
 **Cada aluno tem o seu próprio repositório, já criado previamente no GitHub.** Você só precisa  clonar.
 
-Os repositórios seguem o padrão de nome `fluig-viagens-app-alunoNN`:
+Os repositórios seguem o padrão de nome `fluig-viagens-app-alunoNN`, dentro da conta ou organização
+GitHub informada pelo instrutor:
 
 | Aluno | Repositório |
 |---|---|
-| Aluno 01 | `cardevisi/fluig-viagens-app-aluno01` |
-| Aluno 02 | `cardevisi/fluig-viagens-app-aluno02` |
-| Aluno 03 | `cardevisi/fluig-viagens-app-aluno03` |
-| ... | `cardevisi/fluig-viagens-app-alunoNN` |
+| Aluno 01 | `<GITHUB_ORG>/fluig-viagens-app-aluno01` |
+| Aluno 02 | `<GITHUB_ORG>/fluig-viagens-app-aluno02` |
+| Aluno 03 | `<GITHUB_ORG>/fluig-viagens-app-aluno03` |
+| ... | `<GITHUB_ORG>/fluig-viagens-app-alunoNN` |
 
 ![Tela de clone do GitHub](assets/clone-repository-http.png)
 
 ### 1. Identifique o seu repositório
 
-Confirme com o instrutor qual `ALUNO_ID` foi atribuído a você e defina as variáveis abaixo. O
-exemplo usa `alunoNN`:
+Confirme com o instrutor qual `GITHUB_ORG` (conta ou organização que hospeda os repositórios) e
+qual `ALUNO_ID` foram atribuídos a você, e defina as variáveis abaixo. O exemplo usa `alunoNN`:
 
 ```bash
+GITHUB_ORG="Projeto-Universo-TOTVS"
 ALUNO_ID="alunoNN"
 REPO_ALUNO="fluig-viagens-app-${ALUNO_ID}"
-REPO_SSH="git@github.com:cardevisi/${REPO_ALUNO}.git"
+REPO_SSH="git@github.com:${GITHUB_ORG}/${REPO_ALUNO}.git"
 echo "$REPO_SSH"
 ```
+
+> aside positive
+> A conta ou organização pode variar conforme a turma (ex: `cardevisi`, `Projeto-Universo-TOTVS`).
+> Ajuste `GITHUB_ORG` para o valor informado pelo instrutor antes de clonar.
 
 ### 2. Clone o seu repositório
 
