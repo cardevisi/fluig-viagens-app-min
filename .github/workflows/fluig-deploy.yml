@@ -1,3 +1,4 @@
+# Nome exibido na aba Actions do GitHub e nos checks das PRs.
 name: CI
 
 # Events definem em quais acontecimentos do GitHub Actions este workflow deve iniciar.
@@ -6,11 +7,19 @@ name: CI
 # - pull_request: roda quando uma PR afeta esses mesmos caminhos
 # - workflow_dispatch: permite execução manual e aceita o input `dataset_paths`
 # Referência oficial:
-# https://docs.github.com/pt/rest/using-the-rest-api/github-event-types?apiVersion=2026-03-10
+# https://docs.github.com/pt/actions/reference/workflows-and-actions/events-that-trigger-workflows
+# https://docs.github.com/pt/webhooks/webhook-events-and-payloads (campos de github.event, ex.: github.event.before no push)
 # https://docs.github.com/pt/actions/reference/workflows-and-actions/workflow-syntax
 
 on:
   push:
+    # Filtro de disparo: o workflow só começa se pelo menos um arquivo
+    # alterado no push casar com algum destes globs. Mudanças só em
+    # README.md ou docs/, por exemplo, não disparam nada.
+    #   *  casa qualquer coisa, exceto "/"
+    #   ** casa qualquer coisa, inclusive "/" (qualquer profundidade)
+    # Importante: `paths` só decide SE o workflow roda. Quais datasets vão
+    # para o Fluig é decidido no step "Descobrir datasets alterados".
     paths:
       - "datasets/**"
       - "tests/**"
@@ -18,39 +27,68 @@ on:
       - "fluig.json"
       - "package.json"
   pull_request:
+    # Mesmo filtro para PRs. Aqui contam todos os arquivos que a PR altera
+    # em relação à branch base. Em PR só o job `test` roda (veja o `if` do deploy).
     paths:
       - "datasets/**"
       - "tests/**"
       - ".github/**"
       - "fluig.json"
       - "package.json"
+  # Execução manual pelo botão "Run workflow" na aba Actions.
+  # Não tem filtro de `paths`: sempre roda.
   workflow_dispatch:
     inputs:
+      # Campo de texto opcional exibido no formulário da execução manual.
+      # Quando preenchido, substitui a detecção automática por git diff.
       dataset_paths:
         description: Lista opcional de datasets, um por linha
         required: false
         type: string
 
+# Permissões do GITHUB_TOKEN automático, no mínimo necessário:
+# - contents: read  permite fazer checkout do código
+# - packages: read  permite ler pacotes/imagens do GitHub Packages
+# Nada aqui dá permissão de escrita no repositório.
 permissions:
   contents: read
   packages: read
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1: roda a suíte de testes (tests/datasets.test.js).
+  # Executa em todo disparo: push em qualquer branch, PR e execução manual.
+  # ---------------------------------------------------------------------------
   test:
+    # Máquina virtual Linux fornecida pelo GitHub.
     runs-on: ubuntu-latest
+    # Os steps rodam dentro deste container, garantindo a mesma versão do
+    # Node (22) que o package.json exige (>=20), sem depender da VM.
     container:
       image: node:22-bookworm-slim
 
     steps:
+      # Baixa o código do commit que disparou o workflow. Os testes rodam
+      # sobre o que foi commitado e enviado, não sobre alterações locais.
       - name: Checkout
         uses: actions/checkout@v5
 
+      # Executa `node --test` (script "test" do package.json). Se algum teste
+      # falhar, o comando sai com código diferente de 0 e o job falha.
       - name: Rodar testes
         run: npm test
 
+  # ---------------------------------------------------------------------------
+  # Job 2: publica no Fluig os datasets alterados.
+  # ---------------------------------------------------------------------------
   deploy:
+    # Só começa depois que o job `test` terminar.
     needs: test
     runs-on: ubuntu-latest
+    # Condição para o deploy acontecer:
+    # - os testes passaram, E
+    # - foi execução manual, OU foi push direto na branch main.
+    # Pushes em outras branches e PRs param no job de testes.
     if: >
       needs.test.result == 'success' &&
       (
@@ -59,12 +97,27 @@ jobs:
       )
 
     steps:
+      # fetch-depth: 0 baixa o histórico completo. Sem isso o checkout traz
+      # só o último commit e o `git diff` do próximo step não teria com o
+      # que comparar.
       - name: Checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
+      # Depuração: imprime no log o payload completo do evento que disparou
+      # o workflow (o mesmo objeto acessível como `github.event`). Útil para
+      # conferir campos como `before`, `after` e `created` antes do step
+      # seguinte usá-los. GITHUB_EVENT_PATH é o caminho do arquivo JSON com
+      # esse payload no runner. O payload não contém secrets, mas inclui nomes
+      # e e-mails de quem fez os commits, visíveis no log da execução.
+      - name: Mostrar payload do evento
+        run: cat "$GITHUB_EVENT_PATH"
+
+      # Monta a lista de datasets a publicar e a expõe como saída do step
+      # (steps.datasets.outputs.paths), usada pelos steps seguintes.
       - name: Descobrir datasets alterados
+        # `id` é o nome usado para ler a saída: steps.datasets.outputs...
         id: datasets
         shell: bash
         run: |
@@ -75,37 +128,59 @@ jobs:
           else
             # Quando o disparo vier de um `push`,
             # calculamos os datasets alterados comparando o commit anterior com o atual.
+            # github.event.before é o commit que a branch apontava antes do push.
             BASE="${{ github.event.before }}"
+            # Em branch recém-criada o `before` vem vazio ou só com zeros.
+            # Nesse caso, usamos o primeiro commit do repositório como base.
             if [[ -z "$BASE" || "$BASE" == "0000000000000000000000000000000000000000" ]]; then
               BASE="$(git rev-list --max-parents=0 HEAD | tail -n 1)"
             fi
+            # Lista os arquivos alterados entre BASE e o commit atual e mantém
+            # só os .js dentro de datasets/. O `|| true` evita que o step falhe
+            # quando o grep não encontra nada (grep sai com código 1).
             DATASETS="$(git diff --name-only "$BASE" "${GITHUB_SHA}" | grep '^datasets/.*\.js$' || true)"
           fi
 
+          # Mostra no log quais datasets foram selecionados.
           echo "Selecionados:"
           printf '%s\n' "$DATASETS"
 
+          # Grava a lista como saída do step. A sintaxe nome<<DELIMITADOR
+          # permite valores com várias linhas (um dataset por linha).
           {
             echo "paths<<EOF"
             printf '%s\n' "$DATASETS"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
+      # Se nenhum dataset mudou (ex.: push que alterou só tests/), registra
+      # no log e todos os steps seguintes são pulados pelos seus `if`.
       - name: Encerrar sem deploy
         if: steps.datasets.outputs.paths == ''
         run: echo "Nenhum dataset alterado."
 
+      # Autentica no GitHub Container Registry para baixar a imagem do Fluig
+      # CLI. O token vem de um secret do repositório e é passado via stdin
+      # (--password-stdin) para não aparecer na linha de comando.
       - name: Login no GHCR
         if: steps.datasets.outputs.paths != ''
         run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
 
+      # Baixa a imagem com o Fluig CLI. A tag fixa (0.1.0) garante que todo
+      # deploy use a mesma versão da ferramenta.
       - name: Baixar imagem do Fluig CLI
         if: steps.datasets.outputs.paths != ''
         run: docker pull ghcr.io/cardevisi/fluig-cli:0.1.0
 
+      # Executa o Fluig CLI dentro do container para publicar os datasets.
       - name: Deploy dos datasets alterados
         if: steps.datasets.outputs.paths != ''
+        # Variáveis de ambiente do step:
+        # - secrets.*  valores sensíveis (URL, usuário, senha), mascarados no log
+        # - vars.*     configurações não sensíveis do repositório
+        # - FLUIG_DATASET_PATHS  a lista calculada no step "Descobrir datasets alterados"
+        # - GITHUB_RUN_ID        identificador desta execução, útil para rastrear o deploy
         env:
           FLUIG_BASE_URL: ${{ secrets.FLUIG_BASE_URL }}
           FLUIG_USERNAME: ${{ secrets.FLUIG_USERNAME }}
@@ -113,6 +188,14 @@ jobs:
           FLUIG_SERVER_NAME: ${{ vars.FLUIG_SERVER_NAME }}
           FLUIG_DATASET_PATHS: ${{ steps.datasets.outputs.paths }}
           GITHUB_RUN_ID: ${{ github.run_id }}
+        # docker run:
+        # --rm                    remove o container ao terminar
+        # -v "${PWD}:/workspace"  monta o repositório dentro do container
+        # -w /workspace           define essa pasta como diretório de trabalho
+        # -e NOME                 repassa a variável de ambiente do step para
+        #                         o container (sem -e ela não chega lá)
+        # Não coloque comentários entre as linhas abaixo: a "\" no fim de cada
+        # linha continua o mesmo comando e um comentário no meio o quebraria.
         run: |
           docker run --rm \
             -v "${PWD}:/workspace" \

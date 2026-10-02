@@ -58,6 +58,12 @@ Teste a conexão com o alias configurado:
 
 ```bash
 ssh -T github-NOME_DA_CONTA
+
+#conta aluno universo
+ssh -T git@github-AlunoUniverso2026
+
+# conta padrão 
+ssh -T git@github.com 
 ```
 
 Se tudo estiver correto, o retorno deve ser:

@@ -211,7 +211,6 @@ function filterCountriesDatasets(datasetFiles) {
 function createFluigSandbox() {
   return {
     console,
-    DatasetFieldType: { STRING: "STRING" },
     DatasetBuilder: {
       newDataset() {
         const columns = [];

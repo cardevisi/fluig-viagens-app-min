@@ -82,28 +82,8 @@
                   environment="web"
                   feedback-link="https://github.com/cardevisi/fluig-viagens-app/issues">
     
-      <google-codelab-step label="Visão geral" duration="3">
+      <google-codelab-step label="Introdução" duration="3">
         <p>Neste codelab, você vai reconstruir o projeto <strong>fluig-viagens-app</strong>, acompanhando um fluxo de desenvolvimento que se aproxima de times que precisam publicar com mais segurança e qualidade. Ao longo da aula, você vai entender como <strong>combinar implementação, testes automatizados e pipeline de CI/CD</strong> para criar uma camada de qualidade antes do envio de recursos para produção. Em vez de focar apenas no código do dataset, a proposta é mostrar o caminho completo: <strong>desenvolver, validar, automatizar e preparar a publicação em um servidor Fluig remoto com o apoio do GitHub Actions.</strong></p>
-<p>Ao final, você terá um projeto que:</p>
-<ul>
-<li>publica apenas datasets alterados;</li>
-<li>valida o dataset com teste automatizado;</li>
-<li>usa uma imagem Docker pronta com o Fluig CLI no GHCR (GitHub Container Registry);</li>
-<li>executa deploy manual ou automático a partir do mesmo arquivo <code>fluig-deploy.yml</code>.</li>
-</ul>
-<aside class="special"><p> Este projeto foi reduzido ao essencial para que a aula seja mais objetiva e fácil de acompanhar. Ao mesmo tempo, a estrutura apresentada aqui pode servir como base para cenários mais próximos do dia a dia, com evoluções como workflows separados, múltiplos ambientes e estratégias de publicação para desenvolvimento, homologação e produção.</p>
-</aside>
-<h2 is-upgraded>Atividades deste laboratório</h2>
-<ul>
-<li>Clonar o repositório base.</li>
-<li>Ver rapidamente a extensão do VS Code usada no ecossistema Fluig.</li>
-<li>Ver o Fluig CLI em funcionamento com um overview dos principais comandos.</li>
-<li>Entender a estrutura mínima do projeto.</li>
-<li>Construir o dataset <code>ds-viagens-paises-alunoNN.js</code> com o apoio do Kiro.</li>
-<li>Validar o teste de contrato com <code>npm test</code>.</li>
-<li>Ler o workflow <code>.github/workflows/fluig-deploy.yml</code>.</li>
-<li>Entender como o deploy roda dentro do container usando o Fluig CLI na imagem <code>ghcr.io/cardevisi/fluig-cli:0.1.0</code>.</li>
-</ul>
 <h2 is-upgraded>O que você vai aprender</h2>
 <ul>
 <li>Como escrever um dataset Fluig simples.</li>
@@ -146,7 +126,6 @@
 ├── fluig.json
 └── package.json
 </code></pre>
-<p>Os três blocos que você realmente vai mexer na aula são <code>datasets/</code>, <code>tests/</code> e <code>.github/</code>.</p>
 <aside class="special"><p> As pastas <code>events/</code>, <code>forms/</code>, <code>reports/</code>, <code>wcm/</code> e <code>workflow/</code> fazem parte do scaffold padrão de um projeto Fluig e chegam vazias (apenas com <code>.gitkeep</code>). Elas continuam no repositório porque é ali que outros tipos de recurso entrariam num projeto real, mas não são usadas neste laboratório.</p>
 </aside>
 
@@ -164,22 +143,52 @@
 <h2 is-upgraded>3. Uma conta no GitHub</h2>
 <p>Você precisa ter acesso à organização que hospeda os repositórios da aula:</p>
 <p><a href="https://github.com/Projeto-Universo-TOTVS" target="_blank">https://github.com/Projeto-Universo-TOTVS</a></p>
-<p>Confirme com o instrutor que a sua conta GitHub foi adicionada como membro ou colaborador dessa organização antes de seguir para o passo de clone do projeto. Sem esse acesso, o <code>git clone</code> e o <code>git push</code> do seu repositório vão falhar com erro de permissão.</p>
-<p>Se quiser se aprofundar no GitHub Actions futuramente, use estas referências:</p>
-<ul>
-<li><strong>Marketplace de Actions</strong>: catálogo de ações prontas que podem ser reutilizadas em workflows. <a href="https://github.com/marketplace?type=actions" target="_blank">https://github.com/marketplace?type=actions</a></li>
-<li><strong>Sintaxe de workflows</strong>: referência oficial dos campos aceitos nos arquivos YAML do GitHub Actions. <a href="https://docs.github.com/pt/actions/reference/workflows-and-actions/workflow-syntax" target="_blank">https://docs.github.com/pt/actions/reference/workflows-and-actions/workflow-syntax</a></li>
-<li><strong>Tipos de eventos do GitHub</strong>: ajuda a entender quais eventos podem disparar automações no pipeline. <a href="https://docs.github.com/pt/rest/using-the-rest-api/github-event-types?apiVersion=2026-03-10" target="_blank">https://docs.github.com/pt/rest/using-the-rest-api/github-event-types?apiVersion=2026-03-10</a></li>
-</ul>
 <h2 is-upgraded>4. Acesso a um ambiente Fluig</h2>
-<p>O ambiente Fluig usado nesta aula é:</p>
-<p><a href="https://universo2.nimbvs.fluig.io/portal/p/universo/home" target="_blank">https://universo2.nimbvs.fluig.io/portal/p/universo/home</a></p>
-<p>Os dados de acesso (usuários e senhas) estão nesta planilha:</p>
-<p><a href="https://docs.google.com/spreadsheets/d/1RPQ9X7SsVMobBEIiodkETqbvEzC32EC1HsAdNXwdtKM/edit?gid=0#gid=0" target="_blank">https://docs.google.com/spreadsheets/d/1RPQ9X7SsVMobBEIiodkETqbvEzC32EC1HsAdNXwdtKM/edit?gid=0#gid=0</a></p>
-<aside class="warning"><p> As credenciais da planilha valem apenas para o ambiente temporário desta aula. Não reutilize esses usuários e senhas em outros ambientes e não versione credenciais de ambientes reais em repositório. No pipeline, os valores equivalentes ficam em <strong>Secrets</strong> do GitHub (<code>FLUIG_BASE_URL</code>, <code>FLUIG_USERNAME</code> e <code>FLUIG_PASSWORD</code>).</p>
+<p><strong>Ambiente</strong></p>
+<p>Primeiramente, tenha certeza que o serviço do Fluig esteja rodando em sua máquina local.</p>
+<ul>
+<li>Ambiente: <a href="https://universo2.nimbvs.fluig.io/portal/p/universo/home" target="_blank">https://universo2.nimbvs.fluig.io/portal/p/universo/home</a></li>
+<li>Usuário: <code>universo</code></li>
+<li>Senha: <code>Universo@2026</code></li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Abrindo a pasta de trabalho" duration="2">
+        <p>Você vai usar o <strong>Kiro</strong> como editor durante toda a aula. Antes de clonar o repositório, crie (ou confirme que já existe) uma pasta chamada <strong>Universo 2026</strong> na sua Área de trabalho (Desktop) e abra-a no Kiro. É dentro dela que você vai clonar o seu repositório e trabalhar durante toda a aula.</p>
+<h2 is-upgraded>1. Crie a pasta Universo 2026</h2>
+<p>Se a pasta ainda não existir no seu computador, crie-a na <strong>Área de Trabalho</strong>:</p>
+<ol type="1">
+<li>Minimize as janelas abertas (tecla <code>Windows + D</code>) até ver a Área de Trabalho.</li>
+<li>Clique com o botão direito em uma área vazia e escolha <strong>Novo &gt; Pasta</strong>.</li>
+<li>Nomeie a pasta exatamente como <code>Universo 2026</code> e pressione <code>Enter</code>.</li>
+</ol>
+<h2 is-upgraded>2. Abra o Kiro</h2>
+<p>Clique no menu <strong>Iniciar</strong> do Windows, digite <code>Kiro</code> e abra o aplicativo. Se esta for a primeira vez, você verá a tela inicial de boas-vindas.</p>
+<h2 is-upgraded>3. Abra a pasta Universo 2026 no Kiro</h2>
+<p>Use um dos caminhos abaixo:</p>
+<ul>
+<li>No menu, acesse <strong>File &gt; Open Folder...</strong>;</li>
+<li>Ou, na tela inicial, clique em <strong>Open Folder</strong>;</li>
+<li>Ou use o atalho <code>Ctrl+K Ctrl+O</code>.</li>
+</ul>
+<p>Na janela do Windows que abrir, navegue até <strong>Área de Trabalho</strong>, selecione a pasta <code>Universo 2026</code> e clique em <strong>Selecionar Pasta</strong>.</p>
+<aside class="warning"><p> Se a pasta <code>Universo 2026</code> ainda não existir, você pode criá-la nessa mesma janela: clique com o botão direito dentro da Área de Trabalho e escolha <strong>Novo &gt; Pasta</strong>, nomeie como <code>Universo 2026</code> e então selecione-a.</p>
 </aside>
-<aside class="special"><p> O pipeline foi desenhado para que a parte de teste possa ser estudada mesmo sem acesso imediato a um servidor Fluig.</p>
-</aside>
+<p>Se aparecer um aviso perguntando se você confia nos autores dos arquivos da pasta, clique em <strong>Yes, I trust the authors</strong> (ou equivalente).</p>
+<h2 is-upgraded>4. Abra o terminal integrado do Kiro</h2>
+<p>Com a pasta <code>Universo 2026</code> aberta no Kiro, abra o terminal integrado:</p>
+<ul>
+<li>Menu <strong>Terminal &gt; New Terminal</strong>;</li>
+<li>Ou atalho <code>Ctrl+`</code>.</li>
+</ul>
+<p>Por padrão, o terminal integrado do Kiro no Windows abre no <strong>PowerShell</strong>.</p>
+<h2 is-upgraded>5. Confirme que está no lugar certo</h2>
+<p>No terminal integrado do Kiro, rode:</p>
+<pre><code language="language-powershell" class="language-powershell">pwd
+</code></pre>
+<p>A saída deve apontar para o caminho da pasta <code>Universo 2026</code> que você acabou de abrir, por exemplo <code>C:\Users\<seu-usuario>\Desktop\Universo 2026</code>. É dentro dela, usando o terminal integrado do próprio Kiro, que o clone do seu repositório vai acontecer no próximo passo.</p>
 
 
       </google-codelab-step>
@@ -187,6 +196,7 @@
       <google-codelab-step label="Clone o projeto" duration="2">
         <p><strong>Cada aluno tem o seu próprio repositório, já criado previamente no GitHub.</strong> Você só precisa  clonar.</p>
 <p>Os repositórios seguem o padrão de nome <code>fluig-viagens-app-alunoNN</code>, dentro da conta ou organização GitHub informada pelo instrutor:</p>
+<p>Conta do github: <a href="https://github.com/Projeto-Universo-TOTVS" target="_blank">https://github.com/Projeto-Universo-TOTVS</a></p>
 <table>
 <tr><td colspan="1" rowspan="1"><p>Aluno</p>
 </td><td colspan="1" rowspan="1"><p>Repositório</p>
@@ -210,11 +220,9 @@
 <pre><code language="language-bash" class="language-bash">GITHUB_ORG=&#34;Projeto-Universo-TOTVS&#34;
 ALUNO_ID=&#34;alunoNN&#34;
 REPO_ALUNO=&#34;fluig-viagens-app-${ALUNO_ID}&#34;
-REPO_SSH=&#34;git@github.com:${GITHUB_ORG}/${REPO_ALUNO}.git&#34;
+REPO_SSH=&#34;git@github-AlunoUniverso2026:${GITHUB_ORG}/${REPO_ALUNO}.git&#34;
 echo &#34;$REPO_SSH&#34;
 </code></pre>
-<aside class="special"><p> A conta ou organização pode variar conforme a turma (ex: <code>cardevisi</code>, <code>Projeto-Universo-TOTVS</code>). Ajuste <code>GITHUB_ORG</code> para o valor informado pelo instrutor antes de clonar.</p>
-</aside>
 <h2 is-upgraded>2. Clone o seu repositório</h2>
 <pre><code language="language-bash" class="language-bash">git clone &#34;$REPO_SSH&#34;
 cd &#34;${REPO_ALUNO}&#34;
@@ -228,9 +236,24 @@ git branch --show-current
 <pre><code language="language-bash" class="language-bash">npm test
 </code></pre>
 <p>Se os testes passarem, o seu ambiente está pronto para o resto da aula.</p>
+<h2 is-upgraded>5. Conhecendo o projeto fluig-viagens-app</h2>
+<pre><code language="language-text" class="language-text">fluig-viagens-app-alunoNN/
+├── .github/
+├── datasets/
+├── tests/
+├── docs/
+├── events/
+├── forms/
+├── reports/
+├── wcm/
+├── workflow/
+├── .dockerignore
+├── .gitignore
+├── README.md
+├── fluig.json
+└── package.json
+</code></pre>
 <aside class="warning"><p> Trabalhe somente no repositório com o seu <code>ALUNO_ID</code>. Todos os passos seguintes (dataset, teste e pipeline) assumem que você está dentro dessa pasta, e o deploy no fim da aula usa os Secrets configurados nesse repositório específico.</p>
-</aside>
-<aside class="special"><p> Seu ambiente já tem o SSH configurado, recomendado porque evita pedido de credencial em cada <code>git push</code>, principalmente ao enviar alterações na pasta <code>.github/workflows/</code>.</p>
 </aside>
 
 
@@ -443,7 +466,7 @@ fluig servers list
 <ol type="1">
 <li>varre a pasta <code>datasets/</code>;</li>
 <li>executa cada script dentro de um sandbox;</li>
-<li>injeta mocks de <code>DatasetBuilder</code> e <code>DatasetFieldType</code>;</li>
+<li>injeta mocks de <code>DatasetBuilder</code>;</li>
 <li>valida um contrato mínimo para todos os datasets.</li>
 </ol>
 <p>Isso é útil porque futuros datasets podem ter estruturas e regras de negócio diferentes, mas ainda assim continuarão precisando de algumas validações comuns, como carregamento do script, criação do dataset e consistência entre colunas e linhas.</p>
@@ -465,12 +488,10 @@ fluig servers list
 </table>
 <p>Neste teste, cada fase tem um papel bem concreto:</p>
 <ul>
-<li><strong>Arrange</strong> é montar o sandbox com os mocks de <code>DatasetBuilder</code> e <code>DatasetFieldType</code> e executar o script do dataset ali dentro. É o que substitui o servidor Fluig.</li>
+<li><strong>Arrange</strong> é montar o sandbox com os mocks de <code>DatasetBuilder</code> e executar o script do dataset ali dentro. É o que substitui o servidor Fluig.</li>
 <li><strong>Act</strong> é chamar <code>createDataset([], [], [])</code>, exatamente como o Fluig faria ao consultar o dataset.</li>
 <li><strong>Assert</strong> é comparar colunas e linhas com o contrato esperado.</li>
 </ul>
-<aside class="special"><p> Repare que o arquivo tem um teste por comportamento, em vez de um teste gigante validando tudo. Quando algo quebra, o nome do teste que falhou já diz o que saiu do contrato: se é a ordem das colunas, o total de países ou a linha do Brasil. Um teste que valida seis coisas ao mesmo tempo só informa que &#34;algo deu errado&#34;.</p>
-</aside>
 <h2 is-upgraded>Montando o teste passo a passo</h2>
 <p>Em vez de colar o arquivo inteiro de uma vez, monte o teste em sete blocos. Cada bloco acrescenta um comportamento, e depois de cada um você roda <code>npm test</code> e vê a suíte crescer.</p>
 <p>Crie o arquivo <code>tests/datasets.test.js</code> vazio e vá <strong>acrescentando cada bloco ao final</strong> dele.</p>
@@ -560,7 +581,6 @@ test(&#34;a pasta datasets contém datasets para testar&#34;, () =&gt; {
 function createFluigSandbox() {
   return {
     console,
-    DatasetFieldType: { STRING: &#34;STRING&#34; },
     DatasetBuilder: {
       newDataset() {
         const columns = [];
@@ -1019,7 +1039,6 @@ function filterCountriesDatasets(datasetFiles) {
 function createFluigSandbox() {
   return {
     console,
-    DatasetFieldType: { STRING: &#34;STRING&#34; },
     DatasetBuilder: {
       newDataset() {
         const columns = [];
@@ -1078,12 +1097,16 @@ function loadCreateDataset(relativePath) {
 </code></pre>
 <h2 is-upgraded>O que observar no teste</h2>
 <p>O arquivo está dividido em camadas. Ler nessa ordem ajuda:</p>
-<p><strong>1. Contrato genérico</strong>, aplicado a todo dataset da pasta:</p>
+<p><strong>1. Descoberta</strong>, garante que a suíte realmente encontrou o que precisa testar.:</p>
 <ul>
-<li><code>todo dataset declara a função global createDataset</code> é a cláusula central. Como o arquivo é um script e não um módulo, a declaração <code>function createDataset</code> no nível superior vira propriedade do objeto global, que dentro do <code>vm</code> é o próprio <code>sandbox</code>.</li>
-<li><code>todo dataset devolve colunas e linhas consistentes</code> cobre o que vale para qualquer dataset: colunas e linhas são arrays, existe pelo menos uma coluna, não há nome de coluna duplicado e toda linha tem a mesma quantidade de valores que de colunas.</li>
+<li><code>a pasta datasets contém datasets para testar</code> valida se existem arquivos datasets na pasta datasets.</li>
 </ul>
-<p><strong>2. Regra de negócio</strong>, aplicada só aos datasets de países, selecionados por <code>COUNTRIES_PREFIX</code>:</p>
+<p><strong>2. Contrato genérico</strong>, aplicado a todo dataset da pasta:</p>
+<ul>
+<li><code>dataset declara a função global createDataset</code> valida se todos os datasets criados possuem a função createDataset.</li>
+<li><code>dataset devolve colunas e linhas consistentes</code> cobre o que vale para qualquer dataset: colunas e linhas são arrays, existe pelo menos uma coluna, não há nome de coluna duplicado e toda linha tem a mesma quantidade de valores que de colunas.</li>
+</ul>
+<p><strong>3. Regra de negócio</strong>, aplicada só aos datasets de países, selecionados por <code>COUNTRIES_PREFIX</code>:</p>
 <ul>
 <li><code>expõe as colunas na ordem esperada</code> trava a <strong>ordem</strong>, não só os nomes. O Fluig entrega cada linha como array posicional, sem chave: quem consome lê <code>row[0]</code>, <code>row[1]</code> e <code>row[2]</code>. Conferir posição por posição aponta exatamente qual coluna saiu do lugar.</li>
 <li><code>devolve a lista completa</code> confere o total de 20 países.</li>
@@ -1095,8 +1118,6 @@ function loadCreateDataset(relativePath) {
 <li><code>filterCountriesDatasets</code> usa prefixo em vez de nome fixo. É isso que faz o arquivo funcionar sem edição, qualquer que seja o seu <code>ALUNO_ID</code>.</li>
 <li><code>createFluigSandbox</code> e <code>runDatasetScript</code> são o Arrange: montam os mocks e executam o script no contexto isolado do <code>node:vm</code>.</li>
 </ul>
-<aside class="special"><p> Um teste por comportamento tem uma vantagem prática: quando algo quebra, o nome do teste que falhou já diz o que saiu do contrato. Se você inverter <code>nome</code> e <code>sigla</code> no dataset, só <code>expõe as colunas na ordem esperada</code> falha — os outros continuam verdes, mostrando que o resto está intacto. Um teste único validando tudo só informaria que &#34;algo deu errado&#34;.</p>
-</aside>
 <h2 is-upgraded>Execute localmente</h2>
 <pre><code language="language-bash" class="language-bash">npm test
 </code></pre>
@@ -1310,6 +1331,10 @@ RUN case &#34;${TARGETARCH}&#34; in \
 </ul>
 <h2 is-upgraded>Referências</h2>
 <ul>
+<li>Se quiser se aprofundar no GitHub Actions futuramente, use estas referências:</li>
+<li><strong>Marketplace de Actions</strong>: catálogo de ações prontas que podem ser reutilizadas em workflows. <a href="https://github.com/marketplace?type=actions" target="_blank">https://github.com/marketplace?type=actions</a></li>
+<li><strong>Sintaxe de workflows</strong>: referência oficial dos campos aceitos nos arquivos YAML do GitHub Actions. <a href="https://docs.github.com/pt/actions/reference/workflows-and-actions/workflow-syntax" target="_blank">https://docs.github.com/pt/actions/reference/workflows-and-actions/workflow-syntax</a></li>
+<li><strong>Tipos de eventos do GitHub</strong>: ajuda a entender quais eventos podem disparar automações no pipeline. <a href="https://docs.github.com/pt/rest/using-the-rest-api/github-event-types?apiVersion=2026-03-10" target="_blank">https://docs.github.com/pt/rest/using-the-rest-api/github-event-types?apiVersion=2026-03-10</a></li>
 <li>Repositório: <a href="https://github.com/cardevisi/fluig-viagens-app" target="_blank">https://github.com/cardevisi/fluig-viagens-app</a></li>
 <li><a href="../README.md" target="_blank">README.md</a></li>
 <li><a href="../.github/workflows/fluig-deploy.yml" target="_blank">fluig-deploy.yml</a></li>
