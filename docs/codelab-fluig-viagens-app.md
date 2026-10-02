@@ -15,28 +15,6 @@ Duration: 0:03:00
 Neste codelab, você vai reconstruir o projeto **fluig-viagens-app**, acompanhando um fluxo de desenvolvimento que se aproxima de times que precisam publicar com mais segurança e qualidade.
 Ao longo da aula, você vai entender como **combinar implementação, testes automatizados e pipeline de CI/CD** para criar uma camada de qualidade antes do envio de recursos para produção. Em vez de focar apenas no código do dataset, a proposta é mostrar o caminho completo: **desenvolver, validar, automatizar e preparar a publicação em um servidor Fluig remoto com o apoio do GitHub Actions.**
 
-<!-- Ao final, você terá um projeto que:
-
-- publica apenas datasets alterados;
-- valida o dataset com teste automatizado;
-- usa uma imagem Docker pronta com o Fluig CLI no GHCR (GitHub Container Registry);
-- executa deploy manual ou automático a partir do mesmo arquivo `fluig-deploy.yml`.
-
-> aside positive
-> Este projeto foi reduzido ao essencial para que a aula seja mais objetiva e fácil de acompanhar.
-> Ao mesmo tempo, a estrutura apresentada aqui pode servir como base para cenários mais próximos do dia a dia, com evoluções como workflows separados, múltiplos ambientes e estratégias de publicação para desenvolvimento, homologação e produção. -->
-
-<!-- ### Atividades deste laboratório
-
-- Clonar o repositório base.
-- Ver rapidamente a extensão do VS Code usada no ecossistema Fluig.
-- Ver o Fluig CLI em funcionamento com um overview dos principais comandos.
-- Entender a estrutura mínima do projeto.
-- Construir o dataset `ds-viagens-paises-alunoNN.js` com o apoio do Kiro.
-- Validar o teste de contrato com `npm test`.
-- Ler o workflow `.github/workflows/fluig-deploy.yml`.
-- Entender como o deploy roda dentro do container usando o Fluig CLI na imagem `ghcr.io/cardevisi/fluig-cli:0.1.0`. -->
-
 ### O que você vai aprender
 
 - Como escrever um dataset Fluig simples.
@@ -123,15 +101,6 @@ Primeiramente, tenha certeza que o serviço do Fluig esteja rodando em sua máqu
 - Usuário: `universo`
 - Senha: `Universo@2026`
 
-<!-- > aside negative
-> As credenciais da planilha valem apenas para o ambiente temporário desta aula. Não reutilize
-> esses usuários e senhas em outros ambientes e não versione credenciais de ambientes reais em
-> repositório. No pipeline, os valores equivalentes ficam em **Secrets** do GitHub
-> (`FLUIG_BASE_URL`, `FLUIG_USERNAME` e `FLUIG_PASSWORD`). -->
-
-<!-- > aside positive
-> O pipeline foi desenhado para que a parte de teste possa ser estudada mesmo sem acesso imediato
-> a um servidor Fluig. -->
 
 ## Abrindo a pasta de trabalho
 Duration: 0:02:00
@@ -227,10 +196,6 @@ REPO_SSH="git@github-AlunoUniverso2026:${GITHUB_ORG}/${REPO_ALUNO}.git"
 echo "$REPO_SSH"
 ```
 
-<!-- > aside positive
-> A conta ou organização pode variar conforme a turma (ex: `cardevisi`, `Projeto-Universo-TOTVS`).
-> Ajuste `GITHUB_ORG` para o valor informado pelo instrutor antes de clonar. -->
-
 ### 2. Clone o seu repositório
 
 ```bash
@@ -279,13 +244,6 @@ fluig-viagens-app-alunoNN/
 > Trabalhe somente no repositório com o seu `ALUNO_ID`. Todos os passos seguintes (dataset, teste e
 > pipeline) assumem que você está dentro dessa pasta, e o deploy no fim da aula usa os Secrets
 > configurados nesse repositório específico.
-
-<!-- > aside positive
-> Seu ambiente já tem o SSH configurado, recomendado porque evita pedido de credencial em cada `git push`, principalmente ao enviar
-> alterações na pasta `.github/workflows/`. -->
-
-
-
 
 ## Demonstração rápida: Extensão VS Code
 Duration: 0:02:00
@@ -545,12 +503,6 @@ Neste teste, cada fase tem um papel bem concreto:
 - **Act** é chamar `createDataset([], [], [])`, exatamente como o Fluig faria ao consultar o
   dataset.
 - **Assert** é comparar colunas e linhas com o contrato esperado.
-
-<!-- > aside positive
-> Repare que o arquivo tem um teste por comportamento, em vez de um teste gigante validando tudo.
-> Quando algo quebra, o nome do teste que falhou já diz o que saiu do contrato: se é a ordem das
-> colunas, o total de países ou a linha do Brasil. Um teste que valida seis coisas ao mesmo tempo
-> só informa que "algo deu errado". -->
 
 ### Montando o teste passo a passo
 
@@ -1249,12 +1201,6 @@ Nos helpers:
   edição, qualquer que seja o seu `ALUNO_ID`.
 - `createFluigSandbox` e `runDatasetScript` são o Arrange: montam os mocks e executam o script no
   contexto isolado do `node:vm`.
-
-<!-- > aside positive
-> Um teste por comportamento tem uma vantagem prática: quando algo quebra, o nome do teste que
-> falhou já diz o que saiu do contrato. Se você inverter `nome` e `sigla` no dataset, só
-> `expõe as colunas na ordem esperada` falha — os outros continuam verdes, mostrando que o resto
-> está intacto. Um teste único validando tudo só informaria que "algo deu errado". -->
 
 ### Execute localmente
 
